@@ -3505,7 +3505,7 @@
                       <Properties>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                            <TitledBorder title="Datos de Categor&#xed;a"/>
+                            <TitledBorder title="Datos Categor&#xed;a de art&#xed;culos"/>
                           </Border>
                         </Property>
                       </Properties>
@@ -3522,17 +3522,17 @@
                                   </Group>
                                   <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="jTextField25" min="-2" pref="265" max="-2" attributes="0"/>
-                                      <Component id="jTextField32" min="-2" pref="129" max="-2" attributes="0"/>
-                                      <Component id="jComboBox1" alignment="0" min="-2" pref="128" max="-2" attributes="0"/>
+                                      <Component id="txtNombreCategoria" min="-2" pref="265" max="-2" attributes="0"/>
+                                      <Component id="txtCodigoCategoria" min="-2" pref="129" max="-2" attributes="0"/>
+                                      <Component id="ComboBoxEstadoCategoria" alignment="0" min="-2" pref="128" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace pref="170" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace max="32767" attributes="0"/>
-                                  <Component id="jButton36" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnCancelarCategoria" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                                  <Component id="jButton37" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnGuardarCategoria" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -3546,34 +3546,34 @@
                                           <Component id="jLabel37" max="32767" attributes="0"/>
                                           <EmptySpace min="3" pref="3" max="-2" attributes="0"/>
                                       </Group>
-                                      <Component id="jTextField32" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="txtCodigoCategoria" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace pref="10" max="32767" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
                                       <Component id="jLabel19" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
-                                      <Component id="jTextField25" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="txtNombreCategoria" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="jComboBox1" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="jLabel79" alignment="0" min="-2" pref="17" max="-2" attributes="0"/>
+                                      <Component id="ComboBoxEstadoCategoria" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="jButton36" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jButton37" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnCancelarCategoria" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnGuardarCategoria" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JTextField" name="jTextField32">
+                        <Component class="javax.swing.JTextField" name="txtCodigoCategoria">
                           <Properties>
                             <Property name="editable" type="boolean" value="false"/>
                           </Properties>
                           <Events>
-                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jTextField32ActionPerformed"/>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtCodigoCategoriaActionPerformed"/>
                           </Events>
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel37">
@@ -3586,9 +3586,9 @@
                             <Property name="text" type="java.lang.String" value="Categor&#xed;a Art&#xed;culo:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JTextField" name="jTextField25">
+                        <Component class="javax.swing.JTextField" name="txtNombreCategoria">
                           <Events>
-                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jTextField25ActionPerformed"/>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtNombreCategoriaActionPerformed"/>
                           </Events>
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel79">
@@ -3596,7 +3596,7 @@
                             <Property name="text" type="java.lang.String" value="Estado:"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JComboBox" name="jComboBox1">
+                        <Component class="javax.swing.JComboBox" name="ComboBoxEstadoCategoria">
                           <Properties>
                             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                               <StringArray count="2">
@@ -3610,15 +3610,21 @@
                             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
                           </AuxValues>
                         </Component>
-                        <Component class="javax.swing.JButton" name="jButton37">
+                        <Component class="javax.swing.JButton" name="btnGuardarCategoria">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Guardar"/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnGuardarCategoriaActionPerformed"/>
+                          </Events>
                         </Component>
-                        <Component class="javax.swing.JButton" name="jButton36">
+                        <Component class="javax.swing.JButton" name="btnCancelarCategoria">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Cancelar"/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCancelarCategoriaActionPerformed"/>
+                          </Events>
                         </Component>
                       </SubComponents>
                     </Container>
@@ -3642,12 +3648,12 @@
                                               <Group type="102" alignment="1" attributes="0">
                                                   <Component id="jLabel40" min="-2" max="-2" attributes="0"/>
                                                   <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="jTextField31" min="-2" pref="153" max="-2" attributes="0"/>
+                                                  <Component id="txtBuscarCategoria" min="-2" pref="153" max="-2" attributes="0"/>
                                               </Group>
                                               <Group type="102" alignment="1" attributes="0">
-                                                  <Component id="jButton39" min="-2" pref="78" max="-2" attributes="0"/>
+                                                  <Component id="btnEditarCategoria" min="-2" pref="78" max="-2" attributes="0"/>
                                                   <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="jButton40" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="btnDesactivarCategoria" min="-2" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
                                       </Group>
@@ -3662,14 +3668,14 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <Group type="103" groupAlignment="3" attributes="0">
                                       <Component id="jLabel40" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jTextField31" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="txtBuscarCategoria" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="jScrollPane9" pref="148" max="32767" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="jButton40" max="32767" attributes="0"/>
-                                      <Component id="jButton39" max="32767" attributes="0"/>
+                                      <Component id="btnDesactivarCategoria" max="32767" attributes="0"/>
+                                      <Component id="btnEditarCategoria" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
@@ -3677,9 +3683,9 @@
                         </DimensionLayout>
                       </Layout>
                       <SubComponents>
-                        <Component class="javax.swing.JTextField" name="jTextField31">
+                        <Component class="javax.swing.JTextField" name="txtBuscarCategoria">
                           <Events>
-                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jTextField31ActionPerformed"/>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtBuscarCategoriaActionPerformed"/>
                           </Events>
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel40">
@@ -3694,7 +3700,7 @@
 
                           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                           <SubComponents>
-                            <Component class="javax.swing.JTable" name="Tabla_Provedores5">
+                            <Component class="javax.swing.JTable" name="TablaCategoria">
                               <Properties>
                                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                                   <Font name="Tahoma" size="14" style="0"/>
@@ -3733,13 +3739,13 @@
                             </Component>
                           </SubComponents>
                         </Container>
-                        <Component class="javax.swing.JButton" name="jButton40">
+                        <Component class="javax.swing.JButton" name="btnDesactivarCategoria">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Desactivar"/>
                             <Property name="enabled" type="boolean" value="false"/>
                           </Properties>
                         </Component>
-                        <Component class="javax.swing.JButton" name="jButton39">
+                        <Component class="javax.swing.JButton" name="btnEditarCategoria">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Editar"/>
                             <Property name="enabled" type="boolean" value="false"/>

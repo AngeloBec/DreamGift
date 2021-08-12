@@ -11,8 +11,10 @@ import javax.swing.JTable;
  * @author Alinson Lopez
  */
 public class NegocioBancos {
+
     private boolean ejecucionBanco;
     private AccesoDatosBancos BancoNegocio = new AccesoDatosBancos();
+
     public boolean GuardarBanco(Bancos ClaseBanco) {
         Connection con = Conexion.getConecction();
         try {
@@ -34,17 +36,17 @@ public class NegocioBancos {
         try {
             ejecucionBanco = BancoNegocio.BuscarBancoEstado(con, ClaseBanco);
         } catch (Exception e) {
-        } finally{
+        } finally {
             try {
                 if (con != null) {
                     con.close();
                 }
             } catch (Exception e) {
-            }            
+            }
         }
         return ejecucionBanco;
     } //fin de metodo BuscarBancoEstado
-    
+
     public boolean ModificarBanco(Bancos ClaseBanco) {
         Connection con = Conexion.getConecction();
         try {

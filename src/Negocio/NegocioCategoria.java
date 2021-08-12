@@ -5,25 +5,25 @@
  */
 package Negocio;
 
-import AccesoDatos.AccesoDatosComunas;
-import Entidades.Comuna;
+import AccesoDatos.AccesoDatosCategoria;
+import Entidades.Categoria;
 import conexion.Conexion;
 import java.sql.Connection;
 import javax.swing.JTable;
 
 /**
  *
- * @author Angelo Becerra
+ * @author Wwilliam Ramos
  */
-public class NegocioComuna {
+public class NegocioCategoria {
 
-    private boolean ejecucionComuna;
-    private AccesoDatosComunas ComunaNegocio = new AccesoDatosComunas();
+    private boolean ejecucionCategoria;
+    private AccesoDatosCategoria CategoriaNegocio = new AccesoDatosCategoria();
 
-    public boolean GuardarComuna(Comuna comunasClase) {
+    public boolean GuardarCategoria(Categoria ClaseCategoria) {
         Connection con = Conexion.getConecction();
         try {
-            ejecucionComuna = ComunaNegocio.GuardarComuna(con, comunasClase);
+            ejecucionCategoria = CategoriaNegocio.GuardarCategoria(con, ClaseCategoria);
         } catch (Exception e) {
         } finally {
             try {
@@ -33,13 +33,13 @@ public class NegocioComuna {
             } catch (Exception e) {
             }
         }
-        return ejecucionComuna;
-    } //fin de metodo GuardarComuna
+        return ejecucionCategoria;
+    } //fin de metodo GuardarCategoria
 
-    public boolean ModificarComuna(Comuna comunasClase) {
+    public boolean BuscarCategoriaEstado(Categoria ClaseCategoria) {
         Connection con = Conexion.getConecction();
         try {
-            ejecucionComuna = ComunaNegocio.ModificarComuna(con, comunasClase);
+            ejecucionCategoria = CategoriaNegocio.BuscarCategoriaEstado(con, ClaseCategoria);
         } catch (Exception e) {
         } finally {
             try {
@@ -49,13 +49,13 @@ public class NegocioComuna {
             } catch (Exception e) {
             }
         }
-        return ejecucionComuna;
-    } //fin de metodo ModificarComuna
+        return ejecucionCategoria;
+    } //fin de metodo BuscarCategoriaEstado
 
-    public boolean DesactivarComuna(Comuna comunasClase) {
+    public boolean ModificarCategoria(Categoria ClaseCategoria) {
         Connection con = Conexion.getConecction();
         try {
-            ejecucionComuna = ComunaNegocio.DesactivarComuna(con, comunasClase);
+            ejecucionCategoria = CategoriaNegocio.ModificarCategoria(con, ClaseCategoria);
         } catch (Exception e) {
         } finally {
             try {
@@ -65,13 +65,13 @@ public class NegocioComuna {
             } catch (Exception e) {
             }
         }
-        return ejecucionComuna;
-    }//fin de metodo DesactivarCanal
+        return ejecucionCategoria;
+    } //fin de metodo ModificarCategoria
 
-    public boolean BuscarComuna(String buscar) {
+    public boolean DesactivarCategoria(Categoria ClaseCategoria) {
         Connection con = Conexion.getConecction();
         try {
-            ejecucionComuna = ComunaNegocio.BuscarComuna(con, buscar);
+            ejecucionCategoria = CategoriaNegocio.DesactivarCategoria(con, ClaseCategoria);
         } catch (Exception e) {
         } finally {
             try {
@@ -81,13 +81,13 @@ public class NegocioComuna {
             } catch (Exception e) {
             }
         }
-        return ejecucionComuna;
-    } //fin de metodo BuscarCanal    
+        return ejecucionCategoria;
+    }//fin de metodo DesactivarCategoria
 
-    public boolean BuscarComunaEstado(Comuna comunaClase) {
+    public boolean BuscarCategoria(String buscar) {
         Connection con = Conexion.getConecction();
         try {
-            ejecucionComuna = ComunaNegocio.BuscarComunaEstado(con, comunaClase);
+            ejecucionCategoria = CategoriaNegocio.BuscarCategoria(con, buscar);
         } catch (Exception e) {
         } finally {
             try {
@@ -97,24 +97,24 @@ public class NegocioComuna {
             } catch (Exception e) {
             }
         }
-        return ejecucionComuna;
-    } //fin de metodo BuscarComunaEstado    
+        return ejecucionCategoria;
+    } //fin de metodo BuscarCategoria   
 
-    public void ListarComuna(JTable TablaComuna) {
+    public void ListarCategoria(JTable TablaCategoria) {
         Connection con = Conexion.getConecction();
-        ComunaNegocio.ListarComunas(con, TablaComuna);
+        CategoriaNegocio.ListarCategoria(con, TablaCategoria);
         try {
             con.close();
         } catch (Exception e) {
         }
-    } //fin de metodo ListarCanal
+    } //fin de metodo ListarCategoria
 
-    public void FiltrarComuna(JTable TablaComuna, String buscar) {
+    public void FiltrarCategporia(JTable TablaCategoria, String buscar) {
         Connection con = Conexion.getConecction();
-        ComunaNegocio.FiltrarComuna(con, TablaComuna, buscar);
+        CategoriaNegocio.FiltrarCategoria(con, TablaCategoria, buscar);
         try {
             con.close();
         } catch (Exception e) {
         }
-    }
+    }  //fin de metodo FiltrarCategoria  
 }

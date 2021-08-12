@@ -68,17 +68,17 @@ public class NegocioCanales {
         try {
             ejecucionCanal = CanalNegocio.BuscarCanalEstado(con, medios);
         } catch (Exception e) {
-        } finally{
+        } finally {
             try {
                 if (con != null) {
                     con.close();
                 }
             } catch (Exception e) {
-            }            
+            }
         }
         return ejecucionCanal;
     } //fin de metodo BuscarBancoEstado    
-    
+
     public boolean BuscarCanal(String buscar) {
         Connection con = Conexion.getConecction();
         try {

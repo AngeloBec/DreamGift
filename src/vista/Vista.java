@@ -2,10 +2,12 @@ package vista;
 
 import Entidades.Bancos;
 import Entidades.Canal;
+import Entidades.Categoria;
 import Entidades.Comuna;
 import Entidades.Usuario;
 import Negocio.NegocioBancos;
 import Negocio.NegocioCanales;
+import Negocio.NegocioCategoria;
 import Negocio.NegocioComuna;
 import Negocio.NegocioUsuario;
 import conexion.Conexion;
@@ -33,6 +35,7 @@ public class Vista extends javax.swing.JFrame {
     private NegocioCanales MediosNegocio = new NegocioCanales();
     private NegocioComuna ComunasNegocio = new NegocioComuna();
     private NegocioBancos BancoNegocio = new NegocioBancos();
+    private NegocioCategoria CategoriaNegocio = new NegocioCategoria();
     public Vista() {
         initComponents();
         this.setLocationRelativeTo(null); 
@@ -40,6 +43,7 @@ public class Vista extends javax.swing.JFrame {
         ListarCanalesVista();
         ListarComunasVista();
         ListarBancoVista();
+        ListarCategoriaVista();
     }
     public void ListarUsuariosVista(){
         UserNegocio.ListarUsuario(TablaUsuarios);
@@ -54,6 +58,10 @@ public class Vista extends javax.swing.JFrame {
     public void ListarBancoVista(){
         BancoNegocio.ListarBanco(TablaBanco);
     } 
+    
+    public void ListarCategoriaVista(){
+        CategoriaNegocio.ListarCategoria(TablaCategoria);
+    }
     /*LimpiarFormularioUsuario(): Este metodo limpia o deja en en blanco
     todos los campos que contiene el formulario de Usuarios
     */     
@@ -93,6 +101,15 @@ public class Vista extends javax.swing.JFrame {
         btnEditarBanco.setEnabled(false);
         btnDesactivarBanco.setEnabled(false);
     }    
+    
+    public void LimpiarFormularioCategoria(){
+        txtCodigoCategoria.setText("");
+        txtNombreCategoria.setText("");
+        ComboBoxEstadoCategoria.setEnabled(false);
+        btnGuardarCategoria.setEnabled(true);
+        btnEditarCategoria.setEnabled(false);
+        btnDesactivarCategoria.setEnabled(false);
+    }  
     /*VerificarCuentaUsuario: Esta Función se conecta con la BD de dreamgifts mediante
     la clase conexion, para luego ejecutar un sentencia SQL de consulta para validar
     que la cuenta de usuario generada si existe o no en la BD, retornando verdadero
@@ -157,7 +174,14 @@ public class Vista extends javax.swing.JFrame {
         while (TablaBanco.getRowCount() > 0) {
             model1.removeRow(0);
         }
-    }     
+    }    
+    
+    public void LimpiarTablaCategoria() {
+        DefaultTableModel model1 = (DefaultTableModel) TablaCategoria.getModel();
+        while (TablaCategoria.getRowCount() > 0) {
+            model1.removeRow(0);
+        }
+    } 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -419,21 +443,21 @@ public class Vista extends javax.swing.JFrame {
         jPanel7 = new javax.swing.JPanel();
         jPanel15 = new javax.swing.JPanel();
         jPanel30 = new javax.swing.JPanel();
-        jTextField32 = new javax.swing.JTextField();
+        txtCodigoCategoria = new javax.swing.JTextField();
         jLabel37 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
-        jTextField25 = new javax.swing.JTextField();
+        txtNombreCategoria = new javax.swing.JTextField();
         jLabel79 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jButton37 = new javax.swing.JButton();
-        jButton36 = new javax.swing.JButton();
+        ComboBoxEstadoCategoria = new javax.swing.JComboBox<>();
+        btnGuardarCategoria = new javax.swing.JButton();
+        btnCancelarCategoria = new javax.swing.JButton();
         jPanel31 = new javax.swing.JPanel();
-        jTextField31 = new javax.swing.JTextField();
+        txtBuscarCategoria = new javax.swing.JTextField();
         jLabel40 = new javax.swing.JLabel();
         jScrollPane9 = new javax.swing.JScrollPane();
-        Tabla_Provedores5 = new javax.swing.JTable();
-        jButton40 = new javax.swing.JButton();
-        jButton39 = new javax.swing.JButton();
+        TablaCategoria = new javax.swing.JTable();
+        btnDesactivarCategoria = new javax.swing.JButton();
+        btnEditarCategoria = new javax.swing.JButton();
         jPanel8 = new javax.swing.JPanel();
         jPanel16 = new javax.swing.JPanel();
         jButton44 = new javax.swing.JButton();
@@ -2440,12 +2464,12 @@ public class Vista extends javax.swing.JFrame {
 
         maestros.addTab("Canal", jPanel6);
 
-        jPanel30.setBorder(javax.swing.BorderFactory.createTitledBorder("Datos de Categoría"));
+        jPanel30.setBorder(javax.swing.BorderFactory.createTitledBorder("Datos Categoría de artículos"));
 
-        jTextField32.setEditable(false);
-        jTextField32.addActionListener(new java.awt.event.ActionListener() {
+        txtCodigoCategoria.setEditable(false);
+        txtCodigoCategoria.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField32ActionPerformed(evt);
+                txtCodigoCategoriaActionPerformed(evt);
             }
         });
 
@@ -2453,20 +2477,30 @@ public class Vista extends javax.swing.JFrame {
 
         jLabel19.setText("Categoría Artículo:");
 
-        jTextField25.addActionListener(new java.awt.event.ActionListener() {
+        txtNombreCategoria.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField25ActionPerformed(evt);
+                txtNombreCategoriaActionPerformed(evt);
             }
         });
 
         jLabel79.setText("Estado:");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Activo", "Inactivo" }));
-        jComboBox1.setEnabled(false);
+        ComboBoxEstadoCategoria.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Activo", "Inactivo" }));
+        ComboBoxEstadoCategoria.setEnabled(false);
 
-        jButton37.setText("Guardar");
+        btnGuardarCategoria.setText("Guardar");
+        btnGuardarCategoria.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGuardarCategoriaActionPerformed(evt);
+            }
+        });
 
-        jButton36.setText("Cancelar");
+        btnCancelarCategoria.setText("Cancelar");
+        btnCancelarCategoria.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelarCategoriaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel30Layout = new javax.swing.GroupLayout(jPanel30);
         jPanel30.setLayout(jPanel30Layout);
@@ -2480,15 +2514,15 @@ public class Vista extends javax.swing.JFrame {
                     .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(28, 28, 28)
                 .addGroup(jPanel30Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTextField25, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField32, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtNombreCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtCodigoCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ComboBoxEstadoCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(170, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel30Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton36)
+                .addComponent(btnCancelarCategoria)
                 .addGap(8, 8, 8)
-                .addComponent(jButton37)
+                .addComponent(btnGuardarCategoria)
                 .addContainerGap())
         );
         jPanel30Layout.setVerticalGroup(
@@ -2499,33 +2533,33 @@ public class Vista extends javax.swing.JFrame {
                     .addGroup(jPanel30Layout.createSequentialGroup()
                         .addComponent(jLabel37, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(3, 3, 3))
-                    .addComponent(jTextField32, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtCodigoCategoria, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
                 .addGroup(jPanel30Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField25, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtNombreCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel30Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel79, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel30Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel79, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ComboBoxEstadoCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(14, 14, 14)
                 .addGroup(jPanel30Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton36)
-                    .addComponent(jButton37)))
+                    .addComponent(btnCancelarCategoria)
+                    .addComponent(btnGuardarCategoria)))
         );
 
         jPanel31.setBorder(javax.swing.BorderFactory.createTitledBorder("Categorías Registradas"));
 
-        jTextField31.addActionListener(new java.awt.event.ActionListener() {
+        txtBuscarCategoria.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField31ActionPerformed(evt);
+                txtBuscarCategoriaActionPerformed(evt);
             }
         });
 
         jLabel40.setText("Buscar:");
 
-        Tabla_Provedores5.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        Tabla_Provedores5.setModel(new javax.swing.table.DefaultTableModel(
+        TablaCategoria.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        TablaCategoria.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -2533,15 +2567,15 @@ public class Vista extends javax.swing.JFrame {
                 "Codigo", "Nombre", "Estado"
             }
         ));
-        Tabla_Provedores5.setColumnSelectionAllowed(true);
-        jScrollPane9.setViewportView(Tabla_Provedores5);
-        Tabla_Provedores5.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        TablaCategoria.setColumnSelectionAllowed(true);
+        jScrollPane9.setViewportView(TablaCategoria);
+        TablaCategoria.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
-        jButton40.setText("Desactivar");
-        jButton40.setEnabled(false);
+        btnDesactivarCategoria.setText("Desactivar");
+        btnDesactivarCategoria.setEnabled(false);
 
-        jButton39.setText("Editar");
-        jButton39.setEnabled(false);
+        btnEditarCategoria.setText("Editar");
+        btnEditarCategoria.setEnabled(false);
 
         javax.swing.GroupLayout jPanel31Layout = new javax.swing.GroupLayout(jPanel31);
         jPanel31.setLayout(jPanel31Layout);
@@ -2555,11 +2589,11 @@ public class Vista extends javax.swing.JFrame {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel31Layout.createSequentialGroup()
                                 .addComponent(jLabel40)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField31, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(txtBuscarCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel31Layout.createSequentialGroup()
-                                .addComponent(jButton39, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btnEditarCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton40))))
+                                .addComponent(btnDesactivarCategoria))))
                     .addComponent(jScrollPane9))
                 .addContainerGap())
         );
@@ -2568,13 +2602,13 @@ public class Vista extends javax.swing.JFrame {
             .addGroup(jPanel31Layout.createSequentialGroup()
                 .addGroup(jPanel31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel40)
-                    .addComponent(jTextField31, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtBuscarCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton40, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton39, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnDesactivarCategoria, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnEditarCategoria, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -3618,17 +3652,17 @@ public class Vista extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton10ActionPerformed
 
-    private void jTextField25ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField25ActionPerformed
+    private void txtNombreCategoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreCategoriaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField25ActionPerformed
+    }//GEN-LAST:event_txtNombreCategoriaActionPerformed
 
-    private void jTextField31ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField31ActionPerformed
+    private void txtBuscarCategoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscarCategoriaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField31ActionPerformed
+    }//GEN-LAST:event_txtBuscarCategoriaActionPerformed
 
-    private void jTextField32ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField32ActionPerformed
+    private void txtCodigoCategoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCodigoCategoriaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField32ActionPerformed
+    }//GEN-LAST:event_txtCodigoCategoriaActionPerformed
 
     private void txtNombreComunaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreComunaActionPerformed
         // TODO add your handling code here:
@@ -4405,6 +4439,44 @@ public class Vista extends javax.swing.JFrame {
             ComboBoxEstadoBanco.setSelectedItem(Estado);
         }                 
     }//GEN-LAST:event_TablaBancoMouseClicked
+
+    private void btnCancelarCategoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarCategoriaActionPerformed
+        // TODO add your handling code here:
+        txtBuscarCategoria.setText("");
+        LimpiarFormularioCategoria();
+        LimpiarTablaCategoria();
+        ListarCategoriaVista();        
+    }//GEN-LAST:event_btnCancelarCategoriaActionPerformed
+
+    private void btnGuardarCategoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarCategoriaActionPerformed
+        // TODO add your handling code here:
+        String nombreCategoria = txtNombreCategoria.getText();
+        nombreCategoria = nombreCategoria.toUpperCase();
+        if ((txtNombreCategoria.getText().isEmpty())) {
+               LimpiarFormularioCategoria();
+               JOptionPane.showMessageDialog(null, "Debe Ingresar el nombre de la categoría");  
+        } 
+        else if (CategoriaNegocio.BuscarCategoria(nombreCategoria)){
+               LimpiarFormularioCategoria();
+               JOptionPane.showMessageDialog(null, "El nombre "+nombreCategoria+", esta registrado");
+           }
+        else {
+            int estado = 1;
+            
+            Categoria ClaseCategoria = new Categoria();
+            ClaseCategoria.setNombreCategoria(nombreCategoria);
+            ClaseCategoria.setEstadoCategoria(estado);
+            ClaseCategoria.setLiteralCategoria(nombreCategoria.substring(0, 3));
+            if (CategoriaNegocio.GuardarCategoria(ClaseCategoria)) {
+                LimpiarFormularioCategoria();
+                LimpiarTablaCategoria();
+                ListarCategoriaVista();
+                JOptionPane.showMessageDialog(null, "Categoría Ingresada con éxito");
+            } else {
+                JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+            }
+        }    
+    }//GEN-LAST:event_btnGuardarCategoriaActionPerformed
  
 
     /**
@@ -4449,10 +4521,12 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> ComboBoxEstado;
     private javax.swing.JComboBox<String> ComboBoxEstadoBanco;
     private javax.swing.JComboBox<String> ComboBoxEstadoCanal;
+    private javax.swing.JComboBox<String> ComboBoxEstadoCategoria;
     private javax.swing.JComboBox<String> ComboBoxEstadoComuna;
     private javax.swing.JPasswordField PasswordUsuario;
     private javax.swing.JTable TablaBanco;
     private javax.swing.JTable TablaCanal;
+    private javax.swing.JTable TablaCategoria;
     public javax.swing.JTable TablaClientes;
     private javax.swing.JTable TablaComuna;
     private javax.swing.JTable TablaUsuarios;
@@ -4460,7 +4534,6 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTable Tabla_Provedores1;
     private javax.swing.JTable Tabla_Provedores2;
     private javax.swing.JTable Tabla_Provedores3;
-    private javax.swing.JTable Tabla_Provedores5;
     private javax.swing.JTable Tabla_Provedores8;
     private javax.swing.JLabel Titulo_Prov;
     private javax.swing.JLabel Titulo_Prov1;
@@ -4473,18 +4546,22 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JLabel Titulo_Prov8;
     private javax.swing.JButton btnCancelarBanco;
     private javax.swing.JButton btnCancelarCanal;
+    private javax.swing.JButton btnCancelarCategoria;
     private javax.swing.JButton btnCancelarComuna;
     private javax.swing.JButton btnCancelarUsuario;
     private javax.swing.JButton btnDesactivarBanco;
     private javax.swing.JButton btnDesactivarCanal;
+    private javax.swing.JButton btnDesactivarCategoria;
     private javax.swing.JButton btnDesactivarComuna;
     private javax.swing.JButton btnDesactivarUsuario;
     private javax.swing.JButton btnEditarBanco;
     private javax.swing.JButton btnEditarCanal;
+    private javax.swing.JButton btnEditarCategoria;
     private javax.swing.JButton btnEditarComuna;
     private javax.swing.JButton btnEditarUsuario;
     private javax.swing.JButton btnGuardarBanco;
     private javax.swing.JButton btnGuardarCanal;
+    private javax.swing.JButton btnGuardarCategoria;
     private javax.swing.JButton btnGuardarComuna;
     private javax.swing.JButton btnGuardarUsuario;
     private javax.swing.JButton buscar;
@@ -4519,10 +4596,6 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JButton jButton28;
     private javax.swing.JButton jButton29;
     private javax.swing.JButton jButton30;
-    private javax.swing.JButton jButton36;
-    private javax.swing.JButton jButton37;
-    private javax.swing.JButton jButton39;
-    private javax.swing.JButton jButton40;
     private javax.swing.JButton jButton44;
     private javax.swing.JButton jButton45;
     private javax.swing.JButton jButton51;
@@ -4547,7 +4620,6 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem2;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JComboBox<String> jComboBox3;
     private javax.swing.JComboBox<String> jComboBox4;
@@ -4741,13 +4813,10 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField21;
     private javax.swing.JTextField jTextField22;
     private javax.swing.JTextField jTextField24;
-    private javax.swing.JTextField jTextField25;
     private javax.swing.JTextField jTextField26;
     private javax.swing.JTextField jTextField27;
     private javax.swing.JTextField jTextField29;
     private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField31;
-    private javax.swing.JTextField jTextField32;
     private javax.swing.JTextField jTextField39;
     private javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextField40;
@@ -4774,10 +4843,12 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTextField txtApellido;
     private javax.swing.JTextField txtBuscarBanco;
     private javax.swing.JTextField txtBuscarCanal;
+    private javax.swing.JTextField txtBuscarCategoria;
     private javax.swing.JTextField txtBuscarComuna;
     public javax.swing.JTextField txtCelularCliente;
     private javax.swing.JTextField txtCodigoBanco;
     private javax.swing.JTextField txtCodigoCanal;
+    private javax.swing.JTextField txtCodigoCategoria;
     private javax.swing.JTextField txtCodigoComuna;
     public static javax.swing.JTextField txtComplementoProveedor;
     private javax.swing.JTextField txtCuentaUsuario;
@@ -4789,6 +4860,7 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txtNombreBanco;
     private javax.swing.JTextField txtNombreCanal;
+    private javax.swing.JTextField txtNombreCategoria;
     public javax.swing.JTextField txtNombreCliente;
     private javax.swing.JTextField txtNombreComuna;
     public static javax.swing.JTextField txtNombreProveedor;
