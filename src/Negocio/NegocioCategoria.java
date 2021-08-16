@@ -9,6 +9,7 @@ import AccesoDatos.AccesoDatosCategoria;
 import Entidades.Categoria;
 import conexion.Conexion;
 import java.sql.Connection;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 
 /**
@@ -108,8 +109,17 @@ public class NegocioCategoria {
         } catch (Exception e) {
         }
     } //fin de metodo ListarCategoria
-
-    public void FiltrarCategporia(JTable TablaCategoria, String buscar) {
+    
+    public void CargarCategoria(JComboBox ComboBoxCategoriaArticulo) {
+        Connection con = Conexion.getConecction();
+        CategoriaNegocio.CargarCategoria(con, ComboBoxCategoriaArticulo);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }
+    } //fin de metodo ListarCategoria
+    
+    public void FiltrarCategoria(JTable TablaCategoria, String buscar) {
         Connection con = Conexion.getConecction();
         CategoriaNegocio.FiltrarCategoria(con, TablaCategoria, buscar);
         try {
