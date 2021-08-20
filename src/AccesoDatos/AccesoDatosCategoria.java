@@ -137,10 +137,12 @@ public class AccesoDatosCategoria {
     } //fin de metodo ListarCategorias
 
     public void CargarCategoria(Connection con, JComboBox ComboBoxCategoriaArticulo) {
-        String sql = "select CAT_NOMBRE_CATEG from categoria order by CAT_NOMBRE_CATEG";
+        int estado = 1;
+        String sql = "select CAT_NOMBRE_CATEG from categoria where CAT_ESTADO ="+ estado +" order by CAT_NOMBRE_CATEG";
         try {
             Statement st = con.createStatement();
             ResultSet resultado = st.executeQuery(sql);
+            ComboBoxCategoriaArticulo.addItem("Seleccione Categoria");
             while (resultado.next()) {
                 ComboBoxCategoriaArticulo.addItem(resultado.getString("CAT_NOMBRE_CATEG"));
             }

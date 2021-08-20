@@ -6,6 +6,7 @@
 package Negocio;
 
 import AccesoDatos.AccesoDatosProveedor;
+import Entidades.Proveedor;
 import conexion.Conexion;
 import java.sql.Connection;
 import javax.swing.JComboBox;
@@ -15,8 +16,25 @@ import javax.swing.JComboBox;
  * @author Angelo Becerra
  */
 public class NegocioProveedor {
-    
+
+    private boolean ejecucionProveedor;
     private AccesoDatosProveedor ProveedorNegocio = new AccesoDatosProveedor();
+
+    public boolean GuardarProveedor(Proveedor proveedores) {
+        Connection con = Conexion.getConecction();
+        try {
+            ejecucionProveedor = ProveedorNegocio.GuardarProveedor(con, proveedores);
+        } catch (Exception e) {
+        } finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return ejecucionProveedor;
+    }
     private int IdProveedor = 0;
 
     public void CargarProveedor(JComboBox ComboBoxProveedorArticulo) {
@@ -42,6 +60,7 @@ public class NegocioProveedor {
             }
         }
         return IdProveedor;
-    } //fin de metodo GuardarComuna    
+    } //fin de BuscarIdProveedor   
     
+
 }
