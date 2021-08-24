@@ -133,5 +133,23 @@ public class NegocioArticulo {
             }
         }
         return cantidadRegistros;
-    }  //fin de metodo CantidadArticulo      
+    }  //fin de metodo CantidadArticulo    
+    
+    public void ListarArticulosPack(JTable TablaPackSeleccionArticulos) {
+        Connection con = Conexion.getConecction();
+        ArticulosNegocio.ListarArticulosPack(con, TablaPackSeleccionArticulos);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }
+    } //fin de metodo ListarArticulosPack
+    
+    public void ListarArticulosdelPack(JTable TablaPackConArticulos, int idPack) {
+        Connection con = Conexion.getConecction();
+        ArticulosNegocio.ListarArticulosdelPack(con, TablaPackConArticulos, idPack);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }
+    } //fin de metodo ListarArticulosdelPack
 }

@@ -6,6 +6,8 @@ import Entidades.Canal;
 import Entidades.Categoria;
 import Entidades.Comuna;
 import Entidades.EstadoVenta;
+import Entidades.Pack;
+import Entidades.PackArticulo;
 import Entidades.Proveedor;
 import Entidades.Usuario;
 import Negocio.NegocioArticulo;
@@ -14,6 +16,8 @@ import Negocio.NegocioCanales;
 import Negocio.NegocioCategoria;
 import Negocio.NegocioComuna;
 import Negocio.NegocioEstadoVenta;
+import Negocio.NegocioPack;
+import Negocio.NegocioPackArticulo;
 import Negocio.NegocioProveedor;
 import Negocio.NegocioUsuario;
 import conexion.Conexion;
@@ -38,6 +42,8 @@ import javax.swing.table.TableRowSorter;
 
 public class Vista extends javax.swing.JFrame {
 
+    DefaultTableModel modelo = new DefaultTableModel();
+    JTable TablaRespaldo = new JTable();
     private NegocioUsuario UserNegocio = new NegocioUsuario();
     private NegocioCanales MediosNegocio = new NegocioCanales();
     private NegocioComuna ComunasNegocio = new NegocioComuna();
@@ -46,10 +52,19 @@ public class Vista extends javax.swing.JFrame {
     private NegocioProveedor ProveedorNegocio = new NegocioProveedor();
     private NegocioArticulo ArticulosNegocio = new NegocioArticulo();
     private NegocioEstadoVenta EstadoVentaNegocio = new NegocioEstadoVenta();
-    
+    private NegocioPack PackNegocio = new NegocioPack();
+    private NegocioPackArticulo PackArticuloNegocio = new NegocioPackArticulo();
+    public int cantidadRegistrosInicial = 0;
+    public boolean modificar = false;
+
     public Vista() {
         initComponents();
         this.setLocationRelativeTo(null);
+        modelo.addColumn("Código Artículo");
+        modelo.addColumn("Artículo");
+        modelo.addColumn("Unidades");
+        TablaPackConArticulos.setModel(modelo);
+        TablaRespaldo.setModel(modelo);
         ListarUsuariosVista();
         ListarCanalesVista();
         ListarComunasVista();
@@ -57,6 +72,7 @@ public class Vista extends javax.swing.JFrame {
         ListarCategoriaVista();
         ListarArticulosVista();
         ListarEstadoVentaVista();
+        ListarPackVista();
     }
 
     public void ListarUsuariosVista() {
@@ -81,22 +97,31 @@ public class Vista extends javax.swing.JFrame {
         ProveedorNegocio.CargarProveedor(ComboBoxProveedorArticulo);
 
     }
-    
+
     public void ListarArticulosVista() {
         java.util.Date fecha = new java.util.Date();
         SimpleDateFormat formateoFecha = new SimpleDateFormat("yyyy-MM-dd");
         String Formateo = "2400-12-31";
         try {
-            fecha = (java.util.Date) formateoFecha.parse(Formateo); 
+            fecha = (java.util.Date) formateoFecha.parse(Formateo);
         } catch (Exception e) {
-        }  
+        }
         DateFVArticulo.setDate(fecha);
         ArticulosNegocio.ListarArticulos(TablaArticulos);
+        LimpiarTablaPackSeleccionArticulos();
+        ArticulosNegocio.ListarArticulosPack(TablaPackSeleccionArticulos);
 //        ProveedorNegocio.CargarProveedor(ComboBoxProveedorArticulo);
     }
-    
+
     public void ListarEstadoVentaVista() {
         EstadoVentaNegocio.ListarEstadoVenta(TablaEstadoVenta);
+    }
+
+    public void ListarPackVista() {
+        LimpiarTablaPackSeleccionArticulos();
+        ArticulosNegocio.ListarArticulosPack(TablaPackSeleccionArticulos);
+        PackNegocio.ListarPack(TablaPack);
+
     }
 
     /*LimpiarFormularioUsuario(): Este metodo limpia o deja en en blanco
@@ -162,9 +187,9 @@ public class Vista extends javax.swing.JFrame {
         SimpleDateFormat formateoFecha = new SimpleDateFormat("yyyy-MM-dd");
         String Formateo = "2400-12-31";
         try {
-            fecha = (java.util.Date) formateoFecha.parse(Formateo); 
+            fecha = (java.util.Date) formateoFecha.parse(Formateo);
         } catch (Exception e) {
-        }    
+        }
         CategoriaNegocio.CargarCategoria(ComboBoxCategoriaArticulo);
         ProveedorNegocio.CargarProveedor(ComboBoxProveedorArticulo);
         txtNombreArticulo.setText("");
@@ -181,15 +206,34 @@ public class Vista extends javax.swing.JFrame {
         btnEditarArticulos.setEnabled(false);
         btnDesactivarArticulos.setEnabled(false);
     }
-    
+
     public void LimpiarFormularioEstadoVenta() {
         txtCodigoEstadoVenta.setText("");
-        txtEstadoPagoVenta.setText("");
+        txtNombreEstadoPagoVenta.setText("");
         ComboBoxEstadoVenta.setSelectedIndex(0);
         ComboBoxEstadoVenta.setEnabled(false);
         btnGuardarEstadoVenta.setEnabled(true);
         btnEditarEstadoVenta.setEnabled(false);
         btnDesactivarEstadoVenta.setEnabled(false);
+    }
+
+    public void LimpiarFormularioPack() {
+        txtCodigoPack.setText("");
+        txtNombrePack.setText("");
+        txtPrecioPack.setText("");
+        txtStockPack.setText("");
+        txtUnidadesArticulosPack.setText("");
+        txtUnidadesArticulosPack.setEnabled(false);
+        ComboBoxEstadoPack.setSelectedIndex(0);
+        ComboBoxEstadoPack.setEnabled(false);
+        btnAgregarArticuloPack.setEnabled(false);
+        btnEliminarArticuloPack.setEnabled(false);
+        btnCrearPack.setEnabled(true);
+        btnEditarPack.setEnabled(false);
+        btnDesactivarPack.setEnabled(false);
+        TablaPackConArticulos.setEnabled(true);
+        TablaPackSeleccionArticulos.setEnabled(true);
+        LimpiarTablaPackConArticulos();
     }
 
     /*VerificarCuentaUsuario: Esta Función se conecta con la BD de dreamgifts mediante
@@ -213,7 +257,6 @@ public class Vista extends javax.swing.JFrame {
       con la union de las dos primeras letras del nombre y su apellido.
       En conjunto con otra funcion permiten generar una cuenta de usuario unica
      */
-
     public String FormarCodigoArticulo(int idCategoria, String NombreCategoria, boolean edicion) {
         String codigoArticulo = "";
         String codigoCategoria = CategoriaNegocio.BuscarCodigoCategoria(idCategoria);
@@ -284,13 +327,42 @@ public class Vista extends javax.swing.JFrame {
             model1.removeRow(0);
         }
     }
-    
+
     public void LimpiarTablaEstadoVenta() {
         DefaultTableModel model1 = (DefaultTableModel) TablaEstadoVenta.getModel();
         while (TablaEstadoVenta.getRowCount() > 0) {
             model1.removeRow(0);
         }
     }
+
+    public void LimpiarTablaPack() {
+        DefaultTableModel model1 = (DefaultTableModel) TablaPack.getModel();
+        while (TablaPack.getRowCount() > 0) {
+            model1.removeRow(0);
+        }
+    }
+
+    public void LimpiarTablaPackSeleccionArticulos() {
+        DefaultTableModel model1 = (DefaultTableModel) TablaPackSeleccionArticulos.getModel();
+        while (TablaPackSeleccionArticulos.getRowCount() > 0) {
+            model1.removeRow(0);
+        }
+    }
+
+    public void LimpiarTablaPackConArticulos() {
+        DefaultTableModel model1 = (DefaultTableModel) TablaPackConArticulos.getModel();
+        while (TablaPackConArticulos.getRowCount() > 0) {
+            model1.removeRow(0);
+        }
+    }
+
+    public void LimpiarTablaRespaldo() {
+        DefaultTableModel model1 = (DefaultTableModel) TablaRespaldo.getModel();
+        while (TablaRespaldo.getRowCount() > 0) {
+            model1.removeRow(0);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -513,23 +585,6 @@ public class Vista extends javax.swing.JFrame {
         jScrollPane4 = new javax.swing.JScrollPane();
         TablaArticulos = new javax.swing.JTable();
         jPanel5 = new javax.swing.JPanel();
-        jPanel13 = new javax.swing.JPanel();
-        jLabel17 = new javax.swing.JLabel();
-        txtNombrePack = new javax.swing.JTextField();
-        jLabel35 = new javax.swing.JLabel();
-        jButton24 = new javax.swing.JButton();
-        jButton27 = new javax.swing.JButton();
-        txtPrecioPack = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
-        jTextField7 = new javax.swing.JTextField();
-        jButton9 = new javax.swing.JButton();
-        jButton10 = new javax.swing.JButton();
-        jScrollPane15 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        jScrollPane16 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
-        jLabel38 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
         jPanel33 = new javax.swing.JPanel();
         jScrollPane5 = new javax.swing.JScrollPane();
         TablaPack = new javax.swing.JTable();
@@ -537,6 +592,27 @@ public class Vista extends javax.swing.JFrame {
         btnEditarPack = new javax.swing.JButton();
         btnDesactivarPack = new javax.swing.JButton();
         jLabel71 = new javax.swing.JLabel();
+        jPanel13 = new javax.swing.JPanel();
+        jLabel17 = new javax.swing.JLabel();
+        txtNombrePack = new javax.swing.JTextField();
+        jLabel35 = new javax.swing.JLabel();
+        btnCancelarPack = new javax.swing.JButton();
+        btnCrearPack = new javax.swing.JButton();
+        txtPrecioPack = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        txtUnidadesArticulosPack = new javax.swing.JTextField();
+        btnAgregarArticuloPack = new javax.swing.JButton();
+        btnEliminarArticuloPack = new javax.swing.JButton();
+        jScrollPane15 = new javax.swing.JScrollPane();
+        TablaPackSeleccionArticulos = new javax.swing.JTable();
+        jScrollPane16 = new javax.swing.JScrollPane();
+        TablaPackConArticulos = new javax.swing.JTable();
+        jLabel38 = new javax.swing.JLabel();
+        ComboBoxEstadoPack = new javax.swing.JComboBox<>();
+        jLabel86 = new javax.swing.JLabel();
+        txtCodigoPack = new javax.swing.JTextField();
+        jLabel87 = new javax.swing.JLabel();
+        txtStockPack = new javax.swing.JTextField();
         jPanel6 = new javax.swing.JPanel();
         jPanel25 = new javax.swing.JPanel();
         txtBuscarCanal = new javax.swing.JTextField();
@@ -572,6 +648,24 @@ public class Vista extends javax.swing.JFrame {
         btnEditarCategoria = new javax.swing.JButton();
         btnDesactivarCategoria = new javax.swing.JButton();
         jLabel40 = new javax.swing.JLabel();
+        jPanel8 = new javax.swing.JPanel();
+        jPanel16 = new javax.swing.JPanel();
+        jPanel26 = new javax.swing.JPanel();
+        jLabel20 = new javax.swing.JLabel();
+        txtNombreComuna = new javax.swing.JTextField();
+        jLabel41 = new javax.swing.JLabel();
+        txtCodigoComuna = new javax.swing.JTextField();
+        jLabel78 = new javax.swing.JLabel();
+        ComboBoxEstadoComuna = new javax.swing.JComboBox<>();
+        btnCancelarComuna = new javax.swing.JButton();
+        btnGuardarComuna = new javax.swing.JButton();
+        jPanel27 = new javax.swing.JPanel();
+        txtBuscarComuna = new javax.swing.JTextField();
+        jScrollPane10 = new javax.swing.JScrollPane();
+        TablaComuna = new javax.swing.JTable();
+        btnEditarComuna = new javax.swing.JButton();
+        btnDesactivarComuna = new javax.swing.JButton();
+        jLabel39 = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
         jPanel17 = new javax.swing.JPanel();
         jPanel28 = new javax.swing.JPanel();
@@ -593,7 +687,7 @@ public class Vista extends javax.swing.JFrame {
         jPanel10 = new javax.swing.JPanel();
         jPanel18 = new javax.swing.JPanel();
         jLabel45 = new javax.swing.JLabel();
-        txtEstadoPagoVenta = new javax.swing.JTextField();
+        txtNombreEstadoPagoVenta = new javax.swing.JTextField();
         jLabel46 = new javax.swing.JLabel();
         btnCancelarEstadoVenta = new javax.swing.JButton();
         btnGuardarEstadoVenta = new javax.swing.JButton();
@@ -631,24 +725,6 @@ public class Vista extends javax.swing.JFrame {
         btnEditarUsuario = new javax.swing.JButton();
         btnDesactivarUsuario = new javax.swing.JButton();
         jLabel53 = new javax.swing.JLabel();
-        jPanel8 = new javax.swing.JPanel();
-        jPanel16 = new javax.swing.JPanel();
-        jPanel26 = new javax.swing.JPanel();
-        jLabel20 = new javax.swing.JLabel();
-        txtNombreComuna = new javax.swing.JTextField();
-        jLabel41 = new javax.swing.JLabel();
-        txtCodigoComuna = new javax.swing.JTextField();
-        jLabel78 = new javax.swing.JLabel();
-        ComboBoxEstadoComuna = new javax.swing.JComboBox<>();
-        btnCancelarComuna = new javax.swing.JButton();
-        btnGuardarComuna = new javax.swing.JButton();
-        jPanel27 = new javax.swing.JPanel();
-        txtBuscarComuna = new javax.swing.JTextField();
-        jScrollPane10 = new javax.swing.JScrollPane();
-        TablaComuna = new javax.swing.JTable();
-        btnEditarComuna = new javax.swing.JButton();
-        btnDesactivarComuna = new javax.swing.JButton();
-        jLabel39 = new javax.swing.JLabel();
         faq1 = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
 
@@ -1960,6 +2036,11 @@ public class Vista extends javax.swing.JFrame {
                 txtNombreArticuloActionPerformed(evt);
             }
         });
+        txtNombreArticulo.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtNombreArticuloKeyTyped(evt);
+            }
+        });
 
         jLabel16.setText("Unidades");
 
@@ -1968,12 +2049,22 @@ public class Vista extends javax.swing.JFrame {
                 txtUnidadArticuloActionPerformed(evt);
             }
         });
+        txtUnidadArticulo.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtUnidadArticuloKeyTyped(evt);
+            }
+        });
 
         jLabel28.setText("Marca");
 
         txtMarcaArticulo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtMarcaArticuloActionPerformed(evt);
+            }
+        });
+        txtMarcaArticulo.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtMarcaArticuloKeyTyped(evt);
             }
         });
 
@@ -2255,168 +2346,6 @@ public class Vista extends javax.swing.JFrame {
 
         maestros.addTab("Artículos", jPanel4);
 
-        jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder("Packs"));
-
-        jLabel17.setText("Nombre Pack:");
-
-        txtNombrePack.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtNombrePackActionPerformed(evt);
-            }
-        });
-
-        jLabel35.setText("Precio Pack:");
-
-        jButton24.setText("Cancelar");
-
-        jButton27.setText("Crear Pack");
-
-        txtPrecioPack.setEditable(false);
-        txtPrecioPack.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtPrecioPackActionPerformed(evt);
-            }
-        });
-
-        jLabel4.setText("Unidades");
-
-        jTextField7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField7ActionPerformed(evt);
-            }
-        });
-
-        jButton9.setText("-->");
-        jButton9.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton9ActionPerformed(evt);
-            }
-        });
-
-        jButton10.setText("<---");
-        jButton10.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton10ActionPerformed(evt);
-            }
-        });
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
-            },
-            new String [] {
-                "Articulo", "Stock"
-            }
-        ));
-        jScrollPane15.setViewportView(jTable1);
-
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
-            },
-            new String [] {
-                "Articulo", "Cantidad"
-            }
-        ));
-        jScrollPane16.setViewportView(jTable2);
-
-        jLabel38.setText("Estado:");
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Activo", "Inactivo", " ", " " }));
-        jComboBox1.setEnabled(false);
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
-        jPanel13.setLayout(jPanel13Layout);
-        jPanel13Layout.setHorizontalGroup(
-            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel13Layout.createSequentialGroup()
-                .addGap(527, 527, 527)
-                .addComponent(jButton24)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton27)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(jPanel13Layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addComponent(jScrollPane15, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel4))
-                    .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel38))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(txtNombrePack, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
-                            .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel13Layout.createSequentialGroup()
-                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel13Layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel13Layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
-                                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jButton9, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addGap(70, 70, 70)
-                        .addComponent(jScrollPane16, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addGap(50, 50, 50)
-                        .addComponent(jLabel35)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtPrecioPack, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(12, Short.MAX_VALUE))
-        );
-        jPanel13Layout.setVerticalGroup(
-            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel13Layout.createSequentialGroup()
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addGap(13, 13, 13)
-                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtPrecioPack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel35, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtNombrePack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel17))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel38)
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
-                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane15, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane16, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton9)
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4))
-                        .addGap(18, 18, 18)
-                        .addComponent(jButton10)))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton27)
-                    .addComponent(jButton24))
-                .addGap(18, 18, 18))
-        );
-
         jPanel33.setBorder(javax.swing.BorderFactory.createTitledBorder("Tabla de Packs"));
 
         TablaPack.setModel(new javax.swing.table.DefaultTableModel(
@@ -2424,16 +2353,38 @@ public class Vista extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Codigo De Pack", "Nombre De Pack", "Unidades De Bodega", "Precio", "Estado"
+                "Codigo De Pack", "Nombre De Pack", "Costo del pack", "Stock", "Estado"
             }
         ));
+        TablaPack.getTableHeader().setReorderingAllowed(false);
+        TablaPack.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TablaPackMouseClicked(evt);
+            }
+        });
         jScrollPane5.setViewportView(TablaPack);
+
+        txtBuscarPack.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtBuscarPackKeyReleased(evt);
+            }
+        });
 
         btnEditarPack.setText("Editar");
         btnEditarPack.setEnabled(false);
+        btnEditarPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditarPackActionPerformed(evt);
+            }
+        });
 
         btnDesactivarPack.setText("Desactivar");
         btnDesactivarPack.setEnabled(false);
+        btnDesactivarPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDesactivarPackActionPerformed(evt);
+            }
+        });
 
         jLabel71.setText("Buscar:");
 
@@ -2448,7 +2399,7 @@ public class Vista extends javax.swing.JFrame {
                         .addComponent(jLabel71)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtBuscarPack, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 707, Short.MAX_VALUE)
+                    .addComponent(jScrollPane5)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel33Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btnEditarPack, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2471,6 +2422,222 @@ public class Vista extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder("Packs"));
+
+        jLabel17.setText("Nombre Pack:");
+
+        txtNombrePack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNombrePackActionPerformed(evt);
+            }
+        });
+        txtNombrePack.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtNombrePackKeyTyped(evt);
+            }
+        });
+
+        jLabel35.setText("Costo Pack:");
+
+        btnCancelarPack.setText("Cancelar");
+        btnCancelarPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelarPackActionPerformed(evt);
+            }
+        });
+
+        btnCrearPack.setText("Crear Pack");
+        btnCrearPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCrearPackActionPerformed(evt);
+            }
+        });
+
+        txtPrecioPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtPrecioPackActionPerformed(evt);
+            }
+        });
+        txtPrecioPack.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtPrecioPackKeyTyped(evt);
+            }
+        });
+
+        jLabel4.setText("Unidades");
+
+        txtUnidadesArticulosPack.setEnabled(false);
+        txtUnidadesArticulosPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtUnidadesArticulosPackActionPerformed(evt);
+            }
+        });
+
+        btnAgregarArticuloPack.setText("-->");
+        btnAgregarArticuloPack.setEnabled(false);
+        btnAgregarArticuloPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAgregarArticuloPackActionPerformed(evt);
+            }
+        });
+
+        btnEliminarArticuloPack.setText("<--");
+        btnEliminarArticuloPack.setEnabled(false);
+        btnEliminarArticuloPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarArticuloPackActionPerformed(evt);
+            }
+        });
+
+        TablaPackSeleccionArticulos.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Código Artículo", "Artículo"
+            }
+        ));
+        TablaPackSeleccionArticulos.getTableHeader().setReorderingAllowed(false);
+        TablaPackSeleccionArticulos.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TablaPackSeleccionArticulosMouseClicked(evt);
+            }
+        });
+        jScrollPane15.setViewportView(TablaPackSeleccionArticulos);
+
+        TablaPackConArticulos.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Código Artículo", "Artículo", "Cantidad"
+            }
+        ));
+        TablaPackConArticulos.getTableHeader().setReorderingAllowed(false);
+        TablaPackConArticulos.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TablaPackConArticulosMouseClicked(evt);
+            }
+        });
+        jScrollPane16.setViewportView(TablaPackConArticulos);
+        if (TablaPackConArticulos.getColumnModel().getColumnCount() > 0) {
+            TablaPackConArticulos.getColumnModel().getColumn(2).setMinWidth(60);
+            TablaPackConArticulos.getColumnModel().getColumn(2).setMaxWidth(60);
+        }
+
+        jLabel38.setText("Estado:");
+
+        ComboBoxEstadoPack.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Activo", "Inactivo", " ", " " }));
+        ComboBoxEstadoPack.setEnabled(false);
+        ComboBoxEstadoPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ComboBoxEstadoPackActionPerformed(evt);
+            }
+        });
+
+        jLabel86.setText("Código Pack:");
+
+        txtCodigoPack.setEditable(false);
+        txtCodigoPack.setEnabled(false);
+
+        jLabel87.setText("Stock:");
+
+        txtStockPack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtStockPackActionPerformed(evt);
+            }
+        });
+        txtStockPack.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtStockPackKeyTyped(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
+        jPanel13.setLayout(jPanel13Layout);
+        jPanel13Layout.setHorizontalGroup(
+            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel13Layout.createSequentialGroup()
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel13Layout.createSequentialGroup()
+                        .addGap(562, 562, 562)
+                        .addComponent(btnCancelarPack)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnCrearPack))
+                    .addGroup(jPanel13Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel13Layout.createSequentialGroup()
+                                .addComponent(jScrollPane15, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnEliminarArticuloPack, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(btnAgregarArticuloPack)
+                                    .addGroup(jPanel13Layout.createSequentialGroup()
+                                        .addGap(10, 10, 10)
+                                        .addComponent(txtUnidadesArticulosPack, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGap(53, 53, 53)
+                                .addComponent(jScrollPane16, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel13Layout.createSequentialGroup()
+                                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel38)
+                                    .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel86))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(txtCodigoPack, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
+                                    .addComponent(txtNombrePack)
+                                    .addComponent(ComboBoxEstadoPack, 0, 146, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel35)
+                                    .addComponent(jLabel87))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(txtPrecioPack, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
+                                    .addComponent(txtStockPack))))))
+                .addContainerGap())
+        );
+        jPanel13Layout.setVerticalGroup(
+            jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel13Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtPrecioPack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel35, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel86)
+                    .addComponent(txtCodigoPack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtNombrePack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel87)
+                        .addComponent(txtStockPack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel17))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel38)
+                    .addComponent(ComboBoxEstadoPack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane15, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane16, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel13Layout.createSequentialGroup()
+                        .addComponent(btnAgregarArticuloPack)
+                        .addGap(13, 13, 13)
+                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtUnidadesArticulosPack, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnEliminarArticuloPack)))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnCancelarPack)
+                    .addComponent(btnCrearPack)))
+        );
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
@@ -2480,7 +2647,7 @@ public class Vista extends javax.swing.JFrame {
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel33, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 187, Short.MAX_VALUE))
+                .addGap(0, 150, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2489,7 +2656,7 @@ public class Vista extends javax.swing.JFrame {
                 .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel33, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(85, Short.MAX_VALUE))
         );
 
         maestros.addTab("Packs", jPanel5);
@@ -2706,6 +2873,11 @@ public class Vista extends javax.swing.JFrame {
                 txtNombreCategoriaActionPerformed(evt);
             }
         });
+        txtNombreCategoria.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtNombreCategoriaKeyTyped(evt);
+            }
+        });
 
         jLabel79.setText("Estado:");
 
@@ -2902,6 +3074,227 @@ public class Vista extends javax.swing.JFrame {
         );
 
         maestros.addTab("Categorías Artículos", jPanel7);
+
+        jPanel26.setBorder(javax.swing.BorderFactory.createTitledBorder("Datos de Comunas"));
+
+        jLabel20.setText("Nombre Comuna");
+
+        txtNombreComuna.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNombreComunaActionPerformed(evt);
+            }
+        });
+        txtNombreComuna.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtNombreComunaKeyTyped(evt);
+            }
+        });
+
+        jLabel41.setText("Código Comuna ");
+
+        txtCodigoComuna.setEditable(false);
+        txtCodigoComuna.setEnabled(false);
+        txtCodigoComuna.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtCodigoComunaActionPerformed(evt);
+            }
+        });
+
+        jLabel78.setText("Estado");
+
+        ComboBoxEstadoComuna.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Activo", "Inactivo" }));
+        ComboBoxEstadoComuna.setEnabled(false);
+
+        btnCancelarComuna.setText("Cancelar");
+        btnCancelarComuna.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelarComunaActionPerformed(evt);
+            }
+        });
+
+        btnGuardarComuna.setText("Guardar");
+        btnGuardarComuna.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGuardarComunaActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel26Layout = new javax.swing.GroupLayout(jPanel26);
+        jPanel26.setLayout(jPanel26Layout);
+        jPanel26Layout.setHorizontalGroup(
+            jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel26Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel78)
+                    .addComponent(jLabel41, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30)
+                .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel26Layout.createSequentialGroup()
+                        .addComponent(ComboBoxEstadoComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnCancelarComuna)
+                        .addGap(8, 8, 8)
+                        .addComponent(btnGuardarComuna))
+                    .addGroup(jPanel26Layout.createSequentialGroup()
+                        .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtCodigoComuna, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtNombreComuna, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 356, Short.MAX_VALUE))))
+        );
+        jPanel26Layout.setVerticalGroup(
+            jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel26Layout.createSequentialGroup()
+                .addGap(17, 17, 17)
+                .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel41)
+                    .addGroup(jPanel26Layout.createSequentialGroup()
+                        .addComponent(txtCodigoComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtNombreComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel20))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(ComboBoxEstadoComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel78))))
+                .addContainerGap(29, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel26Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnCancelarComuna)
+                    .addComponent(btnGuardarComuna))
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel16Layout = new javax.swing.GroupLayout(jPanel16);
+        jPanel16.setLayout(jPanel16Layout);
+        jPanel16Layout.setHorizontalGroup(
+            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel16Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel26, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanel16Layout.setVerticalGroup(
+            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel16Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel26, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(304, 304, 304))
+        );
+
+        jPanel27.setBorder(javax.swing.BorderFactory.createTitledBorder("Comunas Registradas"));
+
+        txtBuscarComuna.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtBuscarComunaActionPerformed(evt);
+            }
+        });
+        txtBuscarComuna.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtBuscarComunaKeyReleased(evt);
+            }
+        });
+
+        TablaComuna.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Código Comuna", "Nombre de la Comuna", "Estado"
+            }
+        ));
+        TablaComuna.setColumnSelectionAllowed(true);
+        TablaComuna.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                TablaComunaMouseClicked(evt);
+            }
+        });
+        jScrollPane10.setViewportView(TablaComuna);
+        TablaComuna.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+
+        btnEditarComuna.setText("Editar");
+        btnEditarComuna.setEnabled(false);
+        btnEditarComuna.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditarComunaActionPerformed(evt);
+            }
+        });
+
+        btnDesactivarComuna.setText("Desactivar");
+        btnDesactivarComuna.setEnabled(false);
+        btnDesactivarComuna.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDesactivarComunaActionPerformed(evt);
+            }
+        });
+
+        jLabel39.setText("Buscar:");
+
+        javax.swing.GroupLayout jPanel27Layout = new javax.swing.GroupLayout(jPanel27);
+        jPanel27.setLayout(jPanel27Layout);
+        jPanel27Layout.setHorizontalGroup(
+            jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel27Layout.createSequentialGroup()
+                .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 761, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel27Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel27Layout.createSequentialGroup()
+                        .addComponent(jLabel39)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(txtBuscarComuna, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel27Layout.createSequentialGroup()
+                        .addComponent(btnEditarComuna)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnDesactivarComuna)
+                        .addGap(11, 11, 11))))
+        );
+        jPanel27Layout.setVerticalGroup(
+            jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel27Layout.createSequentialGroup()
+                .addGroup(jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtBuscarComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel39))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnEditarComuna)
+                    .addComponent(btnDesactivarComuna))
+                .addContainerGap(18, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addGap(35, 35, 35)
+                .addComponent(jPanel27, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(104, Short.MAX_VALUE))
+            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
+                    .addContainerGap(61, Short.MAX_VALUE)
+                    .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(74, Short.MAX_VALUE)))
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
+                .addContainerGap(211, Short.MAX_VALUE)
+                .addComponent(jPanel27, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(159, 159, 159))
+            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel8Layout.createSequentialGroup()
+                    .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 500, Short.MAX_VALUE)))
+        );
+
+        maestros.addTab("Comunas", jPanel8);
 
         jPanel28.setBorder(javax.swing.BorderFactory.createTitledBorder("Datos de Banco"));
 
@@ -3127,9 +3520,14 @@ public class Vista extends javax.swing.JFrame {
 
         jLabel45.setText("Estado Pago De Venta:");
 
-        txtEstadoPagoVenta.addActionListener(new java.awt.event.ActionListener() {
+        txtNombreEstadoPagoVenta.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtEstadoPagoVentaActionPerformed(evt);
+                txtNombreEstadoPagoVentaActionPerformed(evt);
+            }
+        });
+        txtNombreEstadoPagoVenta.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                txtNombreEstadoPagoVentaKeyTyped(evt);
             }
         });
 
@@ -3186,7 +3584,7 @@ public class Vista extends javax.swing.JFrame {
                             .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                 .addComponent(ComboBoxEstadoVenta, javax.swing.GroupLayout.Alignment.LEADING, 0, 129, Short.MAX_VALUE)
                                 .addComponent(txtCodigoEstadoVenta, javax.swing.GroupLayout.Alignment.LEADING))
-                            .addComponent(txtEstadoPagoVenta, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtNombreEstadoPagoVenta, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -3196,7 +3594,7 @@ public class Vista extends javax.swing.JFrame {
                 .addGap(10, 10, 10)
                 .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel45)
-                    .addComponent(txtEstadoPagoVenta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtNombreEstadoPagoVenta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel46)
@@ -3586,227 +3984,6 @@ public class Vista extends javax.swing.JFrame {
 
         maestros.addTab("Usuarios", jPanel11);
 
-        jPanel26.setBorder(javax.swing.BorderFactory.createTitledBorder("Datos de Comunas"));
-
-        jLabel20.setText("Nombre Comuna");
-
-        txtNombreComuna.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtNombreComunaActionPerformed(evt);
-            }
-        });
-        txtNombreComuna.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                txtNombreComunaKeyTyped(evt);
-            }
-        });
-
-        jLabel41.setText("Código Comuna ");
-
-        txtCodigoComuna.setEditable(false);
-        txtCodigoComuna.setEnabled(false);
-        txtCodigoComuna.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtCodigoComunaActionPerformed(evt);
-            }
-        });
-
-        jLabel78.setText("Estado");
-
-        ComboBoxEstadoComuna.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Activo", "Inactivo" }));
-        ComboBoxEstadoComuna.setEnabled(false);
-
-        btnCancelarComuna.setText("Cancelar");
-        btnCancelarComuna.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCancelarComunaActionPerformed(evt);
-            }
-        });
-
-        btnGuardarComuna.setText("Guardar");
-        btnGuardarComuna.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGuardarComunaActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel26Layout = new javax.swing.GroupLayout(jPanel26);
-        jPanel26.setLayout(jPanel26Layout);
-        jPanel26Layout.setHorizontalGroup(
-            jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel26Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel78)
-                    .addComponent(jLabel41, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(30, 30, 30)
-                .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel26Layout.createSequentialGroup()
-                        .addComponent(ComboBoxEstadoComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnCancelarComuna)
-                        .addGap(8, 8, 8)
-                        .addComponent(btnGuardarComuna))
-                    .addGroup(jPanel26Layout.createSequentialGroup()
-                        .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtCodigoComuna, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtNombreComuna, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 356, Short.MAX_VALUE))))
-        );
-        jPanel26Layout.setVerticalGroup(
-            jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel26Layout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel41)
-                    .addGroup(jPanel26Layout.createSequentialGroup()
-                        .addComponent(txtCodigoComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtNombreComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel20))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(ComboBoxEstadoComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel78))))
-                .addContainerGap(29, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel26Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel26Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnCancelarComuna)
-                    .addComponent(btnGuardarComuna))
-                .addContainerGap())
-        );
-
-        javax.swing.GroupLayout jPanel16Layout = new javax.swing.GroupLayout(jPanel16);
-        jPanel16.setLayout(jPanel16Layout);
-        jPanel16Layout.setHorizontalGroup(
-            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel16Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel26, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-        jPanel16Layout.setVerticalGroup(
-            jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel16Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel26, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(304, 304, 304))
-        );
-
-        jPanel27.setBorder(javax.swing.BorderFactory.createTitledBorder("Comunas Registradas"));
-
-        txtBuscarComuna.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtBuscarComunaActionPerformed(evt);
-            }
-        });
-        txtBuscarComuna.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                txtBuscarComunaKeyReleased(evt);
-            }
-        });
-
-        TablaComuna.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Código Comuna", "Nombre de la Comuna", "Estado"
-            }
-        ));
-        TablaComuna.setColumnSelectionAllowed(true);
-        TablaComuna.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                TablaComunaMouseClicked(evt);
-            }
-        });
-        jScrollPane10.setViewportView(TablaComuna);
-        TablaComuna.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-
-        btnEditarComuna.setText("Editar");
-        btnEditarComuna.setEnabled(false);
-        btnEditarComuna.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnEditarComunaActionPerformed(evt);
-            }
-        });
-
-        btnDesactivarComuna.setText("Desactivar");
-        btnDesactivarComuna.setEnabled(false);
-        btnDesactivarComuna.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDesactivarComunaActionPerformed(evt);
-            }
-        });
-
-        jLabel39.setText("Buscar:");
-
-        javax.swing.GroupLayout jPanel27Layout = new javax.swing.GroupLayout(jPanel27);
-        jPanel27.setLayout(jPanel27Layout);
-        jPanel27Layout.setHorizontalGroup(
-            jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel27Layout.createSequentialGroup()
-                .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 761, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel27Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addGroup(jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel27Layout.createSequentialGroup()
-                        .addComponent(jLabel39)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtBuscarComuna, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel27Layout.createSequentialGroup()
-                        .addComponent(btnEditarComuna)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnDesactivarComuna)
-                        .addGap(11, 11, 11))))
-        );
-        jPanel27Layout.setVerticalGroup(
-            jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel27Layout.createSequentialGroup()
-                .addGroup(jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtBuscarComuna, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel39))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel27Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnEditarComuna)
-                    .addComponent(btnDesactivarComuna))
-                .addContainerGap(18, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
-        jPanel8.setLayout(jPanel8Layout);
-        jPanel8Layout.setHorizontalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel8Layout.createSequentialGroup()
-                .addGap(35, 35, 35)
-                .addComponent(jPanel27, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(104, Short.MAX_VALUE))
-            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
-                    .addContainerGap(61, Short.MAX_VALUE)
-                    .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(74, Short.MAX_VALUE)))
-        );
-        jPanel8Layout.setVerticalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
-                .addContainerGap(211, Short.MAX_VALUE)
-                .addComponent(jPanel27, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(159, 159, 159))
-            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel8Layout.createSequentialGroup()
-                    .addComponent(jPanel16, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 500, Short.MAX_VALUE)))
-        );
-
-        maestros.addTab("Comunas", jPanel8);
-
         jTabbedPane4.addTab("Maestros", maestros);
 
         getContentPane().add(jTabbedPane4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 920, 720));
@@ -3928,9 +4105,9 @@ public class Vista extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtCodigoBancoActionPerformed
 
-    private void txtEstadoPagoVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtEstadoPagoVentaActionPerformed
+    private void txtNombreEstadoPagoVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreEstadoPagoVentaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txtEstadoPagoVentaActionPerformed
+    }//GEN-LAST:event_txtNombreEstadoPagoVentaActionPerformed
 
     private void txtBuscarEstadoVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscarEstadoVentaActionPerformed
         // TODO add your handling code here:
@@ -4052,7 +4229,7 @@ public class Vista extends javax.swing.JFrame {
         nombreComuna = nombreComuna.toUpperCase();
         if ((txtNombreComuna.getText().isEmpty())) {
             LimpiarFormularioComuna();
-            JOptionPane.showMessageDialog(null, "Debe Ingresar el nombre de la comuna","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Debe Ingresar el nombre de la comuna", "Error", JOptionPane.ERROR_MESSAGE);
         } else if (ComunasNegocio.BuscarComuna(nombreComuna)) {
             LimpiarFormularioComuna();
             JOptionPane.showMessageDialog(null, "El nombre de la comuna: " + nombreComuna + ", esta registrado");
@@ -4133,7 +4310,7 @@ public class Vista extends javax.swing.JFrame {
         nombreBanco = nombreBanco.toUpperCase();
         if ((txtNombreBanco.getText().isEmpty())) {
             LimpiarFormularioBanco();
-            JOptionPane.showMessageDialog(null, "Debe Ingresar el nombre del banco","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Debe Ingresar el nombre del banco", "Error", JOptionPane.ERROR_MESSAGE);
         } else if (BancoNegocio.BuscarBanco(nombreBanco)) {
             LimpiarFormularioBanco();
             JOptionPane.showMessageDialog(null, "El nombre " + nombreBanco + ", esta registrado");
@@ -4215,7 +4392,7 @@ public class Vista extends javax.swing.JFrame {
         nombreCategoria = nombreCategoria.toUpperCase();
         if ((txtNombreCategoria.getText().isEmpty())) {
             LimpiarFormularioCategoria();
-            JOptionPane.showMessageDialog(null, "Debe Ingresar el nombre de la categoría","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Debe Ingresar el nombre de la categoría", "Error", JOptionPane.ERROR_MESSAGE);
         } else if (CategoriaNegocio.BuscarCategoria(nombreCategoria)) {
             LimpiarFormularioCategoria();
             JOptionPane.showMessageDialog(null, "El nombre " + nombreCategoria + ", esta registrado");
@@ -4244,10 +4421,8 @@ public class Vista extends javax.swing.JFrame {
             if ((txtRutProveedor.getText().isEmpty()) || (txtNombreProveedor.getText().isEmpty())
                     || (txtDireccionProveedor.getText().isEmpty()) || (txtRazonSocialProveedor.getText().isEmpty())
                     || (txtProveedorTelefono.getText().isEmpty())
-                    || (txtEmailProveedor.getText().isEmpty())) 
-                    
-{
-                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+                    || (txtEmailProveedor.getText().isEmpty())) {
+                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 int estado = 1;
                 Proveedor ClaseProveedor = new Proveedor();
@@ -4256,9 +4431,9 @@ public class Vista extends javax.swing.JFrame {
                 ClaseProveedor.setDireccionProveedor(txtDireccionProveedor.getText());
                 ClaseProveedor.setRazonSocialProveedor(txtRazonSocialProveedor.getText());
                 ClaseProveedor.setTelefonoProveedor(Integer.parseInt(txtProveedorTelefono.getText()));
-                
+
                 ClaseProveedor.setCorreo(txtEmailProveedor.getText());
-                
+
                 ClaseProveedor.setEstado(estado);
                 if (ProveedorNegocio.GuardarProveedor(ClaseProveedor)) {
                     LimpiarFormularioUsuario();
@@ -4317,7 +4492,7 @@ public class Vista extends javax.swing.JFrame {
             }
 
         } else {
-            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnDesactivarUsuarioActionPerformed
 
@@ -4344,7 +4519,7 @@ public class Vista extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnEditarUsuarioActionPerformed
 
@@ -4403,7 +4578,7 @@ public class Vista extends javax.swing.JFrame {
         //datos para ejecutar los metodos que insertan la informacion en la BD y actualiza la información del formulario
         if ((txtNombre.getText().isEmpty()) || (txtApellido.getText().isEmpty())
                 || (PasswordUsuario.getText().isEmpty())) {
-            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
             int estado = 1;
             Usuario ClaseUsuario = new Usuario();
@@ -4506,13 +4681,60 @@ public class Vista extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_buscarActionPerformed
 
-    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
+    private void btnEliminarArticuloPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarArticuloPackActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton10ActionPerformed
+        int fila = TablaPackConArticulos.getSelectedRow();
+        if (btnEditarPack.isEnabled()) {
+            PackArticulo ClasePackArticulo = new PackArticulo();
+            ClasePackArticulo.setIdentificadorPackArticulo(Integer.parseInt(txtCodigoPack.getText()));
+            ClasePackArticulo.setIdentificadorArticulo(Integer.parseInt(TablaPackConArticulos.getValueAt(fila, 0).toString()));
+//            System.out.println("Valores" + ClasePackArticulo.getIdentificadorPackArticulo() + " " + ClasePackArticulo.getIdentificadorArticulo());
+            if (PackArticuloNegocio.EliminarPackArticulo(ClasePackArticulo)) {
+                modelo.removeRow(fila);
+                TablaPackConArticulos.setModel(modelo);
+            } else {
+            }
+        } else {
+            modelo.removeRow(fila);
+            TablaPackConArticulos.setModel(modelo);
+        }
 
-    private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
+
+    }//GEN-LAST:event_btnEliminarArticuloPackActionPerformed
+
+    private void btnAgregarArticuloPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarArticuloPackActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton9ActionPerformed
+        String[] datos = new String[3];
+        int fila = TablaPackSeleccionArticulos.getSelectedRow();
+        String idArticulo = TablaPackSeleccionArticulos.getValueAt(fila, 0).toString();
+        String nombreArticulo = TablaPackSeleccionArticulos.getValueAt(fila, 1).toString();
+        int filasCount = TablaPackConArticulos.getRowCount();
+        boolean encontrado = false;
+        if (filasCount > 0) {
+            for (int i = 0; i < filasCount; i++) {
+                if (nombreArticulo.equals(TablaPackConArticulos.getValueAt(i, 1).toString())) {
+                    encontrado = true;
+                }
+            }
+            if (encontrado) {
+                JOptionPane.showMessageDialog(null, "Artículo ya esta agregado");
+            } else {
+                datos[0] = idArticulo;
+                datos[1] = nombreArticulo;
+                datos[2] = txtUnidadesArticulosPack.getText();
+                modelo.addRow(datos);
+                TablaPackConArticulos.setModel(modelo);
+            }
+        } else {
+            datos[0] = idArticulo;
+            datos[1] = nombreArticulo;
+            datos[2] = txtUnidadesArticulosPack.getText();
+            modelo.addRow(datos);
+            TablaPackConArticulos.setModel(modelo);
+        }
+
+
+    }//GEN-LAST:event_btnAgregarArticuloPackActionPerformed
 
     private void txtPrecioPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPrecioPackActionPerformed
         // TODO add your handling code here:
@@ -4522,9 +4744,9 @@ public class Vista extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNombrePackActionPerformed
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
+    private void ComboBoxEstadoPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ComboBoxEstadoPackActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jComboBox1ActionPerformed
+    }//GEN-LAST:event_ComboBoxEstadoPackActionPerformed
 
     private void btnEditarBancoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarBancoActionPerformed
         // TODO add your handling code here:
@@ -4549,7 +4771,7 @@ public class Vista extends javax.swing.JFrame {
             }
         } else {
             if ("".equals(txtNombreBanco.getText())) {
-                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(null, "El nombre del banco: " + txtNombreBanco.getText() + ", esta registrado");
             }
@@ -4563,7 +4785,7 @@ public class Vista extends javax.swing.JFrame {
         nombreCanal = nombreCanal.toUpperCase();
         if ((txtNombreCanal.getText().isEmpty())) {
             LimpiarFormularioCanal();
-            JOptionPane.showMessageDialog(null, "Debe Ingresar el nombre de canal","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Debe Ingresar el nombre de canal", "Error", JOptionPane.ERROR_MESSAGE);
         } else if (MediosNegocio.BuscarCanal(nombreCanal)) {
             LimpiarFormularioCanal();
             JOptionPane.showMessageDialog(null, "El nombre del canal: " + nombreCanal + ", esta registrado");
@@ -4635,7 +4857,7 @@ public class Vista extends javax.swing.JFrame {
             }
         } else {
             if ("".equals(txtNombreCategoria.getText())) {
-                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(null, "El nombre de la categoría: " + txtNombreCategoria.getText() + ", esta registrado");
             }
@@ -4659,7 +4881,7 @@ public class Vista extends javax.swing.JFrame {
             }
 
         } else {
-            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnDesactivarBancoActionPerformed
 
@@ -4686,7 +4908,7 @@ public class Vista extends javax.swing.JFrame {
             }
         } else {
             if ("".equals(txtNombreComuna.getText())) {
-                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(null, "El nombre de comuna: " + txtNombreComuna.getText() + ", esta registrado");
             }
@@ -4711,7 +4933,7 @@ public class Vista extends javax.swing.JFrame {
             }
 
         } else {
-            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
         }
 
     }//GEN-LAST:event_btnDesactivarComunaActionPerformed
@@ -4739,7 +4961,7 @@ public class Vista extends javax.swing.JFrame {
             }
         } else {
             if ("".equals(txtNombreCanal.getText())) {
-                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(null, "El nombre del canal: " + txtNombreCanal.getText() + ", esta registrado");
             }
@@ -4765,7 +4987,7 @@ public class Vista extends javax.swing.JFrame {
             }
 
         } else {
-            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
         }
 
     }//GEN-LAST:event_btnDesactivarCanalActionPerformed
@@ -4828,7 +5050,7 @@ public class Vista extends javax.swing.JFrame {
             }
 
         } else {
-            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnDesactivarCategoriaActionPerformed
 
@@ -4848,7 +5070,6 @@ public class Vista extends javax.swing.JFrame {
         Articulos ClaseArticulos = new Articulos();
         java.util.Date date = new java.util.Date();
         SimpleDateFormat fecha = new SimpleDateFormat("yyyy-MM-dd");
-        //System.out.println("Esta es la fecha:"+fecha.format(DateFVArticulo.getDate()));
         int idCategoria = CategoriaNegocio.BuscarIdCategoria((String) (ComboBoxCategoriaArticulo.getSelectedItem()));
         int idProveedor = ProveedorNegocio.BuscarIdProveedor((String) (ComboBoxProveedorArticulo.getSelectedItem()));
         String nombreArticulo = txtNombreArticulo.getText();
@@ -4882,12 +5103,12 @@ public class Vista extends javax.swing.JFrame {
             } else {
                 JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
             }
-        }        
+        }
     }//GEN-LAST:event_btnGuardarArticulosActionPerformed
 
-    private void jTextField7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField7ActionPerformed
+    private void txtUnidadesArticulosPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUnidadesArticulosPackActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField7ActionPerformed
+    }//GEN-LAST:event_txtUnidadesArticulosPackActionPerformed
 
     private void txtIdentificadorArticuloActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIdentificadorArticuloActionPerformed
         // TODO add your handling code here:
@@ -4908,10 +5129,10 @@ public class Vista extends javax.swing.JFrame {
             txtCodigoArticulo.setText(TablaArticulos.getValueAt(fila, 2).toString());
             txtUnidadArticulo.setText(TablaArticulos.getValueAt(fila, 3).toString());
             txtMarcaArticulo.setText(TablaArticulos.getValueAt(fila, 4).toString());
-            String Formateo = String.valueOf(TablaArticulos.getValueAt(fila, 5)); 
+            String Formateo = String.valueOf(TablaArticulos.getValueAt(fila, 5));
             try {
                 fecha = (java.util.Date) formateoFecha.parse(Formateo);
-                DateFVArticulo.setDate(fecha);  
+                DateFVArticulo.setDate(fecha);
             } catch (Exception e) {
             }
             ComboBoxEstadoArticulo.setSelectedItem(TablaArticulos.getValueAt(fila, 6));
@@ -4935,7 +5156,7 @@ public class Vista extends javax.swing.JFrame {
         ComboBoxProveedorArticulo.removeAllItems();
         LimpiarTablaArticulos();
         ListarArticulosVista();
-        LimpiarFormularioArticulos();        
+        LimpiarFormularioArticulos();
     }//GEN-LAST:event_btnCancelarArticulosActionPerformed
 
     private void txtBuscarArticuloKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarArticuloKeyReleased
@@ -4948,7 +5169,7 @@ public class Vista extends javax.swing.JFrame {
             LimpiarFormularioArticulos();
             LimpiarTablaArticulos();
             ListarArticulosVista();
-        }        
+        }
     }//GEN-LAST:event_txtBuscarArticuloKeyReleased
 
     private void btnEditarArticulosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarArticulosActionPerformed
@@ -4969,8 +5190,8 @@ public class Vista extends javax.swing.JFrame {
         ClaseArticulos.setIdProveedorArticulo(ProveedorNegocio.BuscarIdProveedor((String) (ComboBoxProveedorArticulo.getSelectedItem())));
         if ((!"".equals(txtNombreArticulo.getText())) && (!"".equals(txtUnidadArticulo.getText())) && (!"".equals(txtMarcaArticulo.getText()))
                 && (!"".equals(txtMarcaArticulo.getText())) && (ComboBoxCategoriaArticulo.getSelectedItem() != "Seleccione Categoria")
-                && (DateFVArticulo.getDate() != null) && (ComboBoxProveedorArticulo.getSelectedItem() != "Seleccione Proveedor")){
-                //&& (ArticulosNegocio.BuscarArticuloEstado(ClaseArticulos) == false) || (ArticulosNegocio.BuscarArticulo(ClaseArticulos) == false)) {
+                && (DateFVArticulo.getDate() != null) && (ComboBoxProveedorArticulo.getSelectedItem() != "Seleccione Proveedor")) {
+            //&& (ArticulosNegocio.BuscarArticuloEstado(ClaseArticulos) == false) || (ArticulosNegocio.BuscarArticulo(ClaseArticulos) == false)) {
             String codigoArticulo = FormarCodigoArticulo(CategoriaNegocio.BuscarIdCategoria((String) (ComboBoxCategoriaArticulo.getSelectedItem())), (String) ComboBoxCategoriaArticulo.getSelectedItem(), edicion);
             String MarcaArticulo = txtMarcaArticulo.getText();
             ClaseArticulos.setMarcaArticulo(MarcaArticulo.toUpperCase());
@@ -4987,16 +5208,14 @@ public class Vista extends javax.swing.JFrame {
             } else {
                 JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
             }
-        } 
-        else if ((txtNombreArticulo.getText().isEmpty()) || (txtUnidadArticulo.getText().isEmpty())
-                    || (txtMarcaArticulo.getText().isEmpty()) || (ComboBoxCategoriaArticulo.getSelectedItem() == "Seleccione Categoria")
-                    || (DateFVArticulo.getDate() == null) || (ComboBoxProveedorArticulo.getSelectedItem() == "Seleccione Proveedor")) {
-                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
-            } 
-        else{
-                JOptionPane.showMessageDialog(null, "El Artículo: " + txtNombreArticulo.getText() + ", esta registrado", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-                        
+        } else if ((txtNombreArticulo.getText().isEmpty()) || (txtUnidadArticulo.getText().isEmpty())
+                || (txtMarcaArticulo.getText().isEmpty()) || (ComboBoxCategoriaArticulo.getSelectedItem() == "Seleccione Categoria")
+                || (DateFVArticulo.getDate() == null) || (ComboBoxProveedorArticulo.getSelectedItem() == "Seleccione Proveedor")) {
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "El Artículo: " + txtNombreArticulo.getText() + ", esta registrado", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
     }//GEN-LAST:event_btnEditarArticulosActionPerformed
 
     private void btnDesactivarArticulosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDesactivarArticulosActionPerformed
@@ -5020,8 +5239,8 @@ public class Vista extends javax.swing.JFrame {
             }
 
         } else {
-            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
-        }        
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnDesactivarArticulosActionPerformed
 
     private void btnCancelarEstadoVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarEstadoVentaActionPerformed
@@ -5029,15 +5248,15 @@ public class Vista extends javax.swing.JFrame {
         txtBuscarEstadoVenta.setText("");
         LimpiarFormularioEstadoVenta();
         LimpiarTablaEstadoVenta();
-        ListarEstadoVentaVista();        
+        ListarEstadoVentaVista();
     }//GEN-LAST:event_btnCancelarEstadoVentaActionPerformed
 
     private void btnGuardarEstadoVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarEstadoVentaActionPerformed
         // TODO add your handling code here:
-        String nombreEstadoVenta = txtEstadoPagoVenta.getText();
-        if ((txtEstadoPagoVenta.getText().isEmpty())) {
+        String nombreEstadoVenta = txtNombreEstadoPagoVenta.getText();
+        if ((txtNombreEstadoPagoVenta.getText().isEmpty())) {
             LimpiarFormularioEstadoVenta();
-            JOptionPane.showMessageDialog(null, "Debe Ingresar Estado de Pago","Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Debe Ingresar Estado de Pago", "Error", JOptionPane.ERROR_MESSAGE);
         } else if (EstadoVentaNegocio.BuscarEstadoVenta(nombreEstadoVenta)) {
             LimpiarFormularioEstadoVenta();
             JOptionPane.showMessageDialog(null, "El Estado de pago " + nombreEstadoVenta + ", esta registrado");
@@ -5054,7 +5273,7 @@ public class Vista extends javax.swing.JFrame {
             } else {
                 JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
             }
-        }        
+        }
     }//GEN-LAST:event_btnGuardarEstadoVentaActionPerformed
 
     private void txtBuscarEstadoVentaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarEstadoVentaKeyReleased
@@ -5067,7 +5286,7 @@ public class Vista extends javax.swing.JFrame {
             LimpiarFormularioEstadoVenta();
             LimpiarTablaEstadoVenta();
             ListarEstadoVentaVista();
-        }        
+        }
     }//GEN-LAST:event_txtBuscarEstadoVentaKeyReleased
 
     private void TablaEstadoVentaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TablaEstadoVentaMouseClicked
@@ -5089,9 +5308,9 @@ public class Vista extends javax.swing.JFrame {
                 ComboBoxEstadoVenta.setEnabled(false);
             }
             txtCodigoEstadoVenta.setText("" + identificador);
-            txtEstadoPagoVenta.setText(Nombre);
+            txtNombreEstadoPagoVenta.setText(Nombre);
             ComboBoxEstadoVenta.setSelectedItem(Estado);
-        }        
+        }
     }//GEN-LAST:event_TablaEstadoVentaMouseClicked
 
     private void btnEditarEstadoVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarEstadoVentaActionPerformed
@@ -5103,8 +5322,8 @@ public class Vista extends javax.swing.JFrame {
         EstadoVenta ClaseEstadoVenta = new EstadoVenta();
         ClaseEstadoVenta.setEstado(estado);
         ClaseEstadoVenta.setIdentificadorEstadoVenta(Integer.parseInt(txtCodigoEstadoVenta.getText()));
-        if (!"".equals(txtEstadoPagoVenta.getText()) && (EstadoVentaNegocio.BuscarEstadoVentaEstado(ClaseEstadoVenta) == false) || (EstadoVentaNegocio.BuscarEstadoVenta(txtEstadoPagoVenta.getText()) == false)) {
-            String nombreEstadoVenta = txtEstadoPagoVenta.getText();
+        if (!"".equals(txtNombreEstadoPagoVenta.getText()) && (EstadoVentaNegocio.BuscarEstadoVentaEstado(ClaseEstadoVenta) == false) || (EstadoVentaNegocio.BuscarEstadoVenta(txtNombreEstadoPagoVenta.getText()) == false)) {
+            String nombreEstadoVenta = txtNombreEstadoPagoVenta.getText();
             ClaseEstadoVenta.setNombreEstadoVenta(nombreEstadoVenta.toUpperCase());
             if (EstadoVentaNegocio.ModificarEstadoVenta(ClaseEstadoVenta)) {
                 LimpiarFormularioEstadoVenta();
@@ -5115,17 +5334,17 @@ public class Vista extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
             }
         } else {
-            if ("".equals(txtEstadoPagoVenta.getText())) {
-                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
+            if ("".equals(txtNombreEstadoPagoVenta.getText())) {
+                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(null, "Estado de pago: " + txtEstadoPagoVenta.getText() + ", esta registrado");
+                JOptionPane.showMessageDialog(null, "Estado de pago: " + txtNombreEstadoPagoVenta.getText() + ", esta registrado");
             }
-        }        
+        }
     }//GEN-LAST:event_btnEditarEstadoVentaActionPerformed
 
     private void btnDesactivarEstadoVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDesactivarEstadoVentaActionPerformed
         // TODO add your handling code here:
-        if (!"".equals(txtEstadoPagoVenta.getText())) {
+        if (!"".equals(txtNombreEstadoPagoVenta.getText())) {
             int estado = 0;
             EstadoVenta ClaseEstadoVenta = new EstadoVenta();
             ClaseEstadoVenta.setEstado(estado);
@@ -5140,9 +5359,272 @@ public class Vista extends javax.swing.JFrame {
             }
 
         } else {
-            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar","Error", JOptionPane.ERROR_MESSAGE);
-        }        
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnDesactivarEstadoVentaActionPerformed
+
+    private void TablaPackSeleccionArticulosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TablaPackSeleccionArticulosMouseClicked
+        // TODO add your handling code here:
+        if (TablaPackSeleccionArticulos.isEnabled()) {
+            btnAgregarArticuloPack.setEnabled(true);
+            btnEliminarArticuloPack.setEnabled(false);
+            txtUnidadesArticulosPack.setEnabled(true);
+            txtUnidadesArticulosPack.setText("1");
+        }
+
+    }//GEN-LAST:event_TablaPackSeleccionArticulosMouseClicked
+
+    private void TablaPackConArticulosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TablaPackConArticulosMouseClicked
+        // TODO add your handling code here:
+        if (TablaPackConArticulos.isEnabled()) {
+            btnAgregarArticuloPack.setEnabled(false);
+            btnEliminarArticuloPack.setEnabled(true);
+            txtUnidadesArticulosPack.setText("");
+            txtUnidadesArticulosPack.setEnabled(false);
+            modificar = true;
+        }
+            
+    }//GEN-LAST:event_TablaPackConArticulosMouseClicked
+
+    private void btnCancelarPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarPackActionPerformed
+        // TODO add your handling code here:
+        txtBuscarPack.setText("");
+        LimpiarTablaPack();
+        LimpiarTablaPackSeleccionArticulos();
+        ListarPackVista();
+        LimpiarFormularioPack();
+    }//GEN-LAST:event_btnCancelarPackActionPerformed
+
+    private void btnCrearPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCrearPackActionPerformed
+        // TODO add your handling code here:
+        String nombrePack = txtNombrePack.getText();
+        if ((txtNombrePack.getText().isEmpty()) || (txtPrecioPack.getText().isEmpty()) || txtStockPack.getText().isEmpty()) {
+            LimpiarFormularioPack();
+            JOptionPane.showMessageDialog(null, "Debe Ingresar los datos solicitados", "Error", JOptionPane.ERROR_MESSAGE);
+        } else if (TablaPackConArticulos.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(null, "Debe agregar articulos al pack", "Error", JOptionPane.ERROR_MESSAGE);
+        } else if (PackNegocio.BuscarPack(nombrePack.toUpperCase())) {
+            JOptionPane.showMessageDialog(null, "El nombre de pack: " + nombrePack + ", esta registrado");
+        } else {
+            int estado = 1;
+            Pack ClasePack = new Pack();
+            ClasePack.setNombrePack(nombrePack.toUpperCase());
+            ClasePack.setStockPack(Integer.parseInt(txtStockPack.getText()));
+            ClasePack.setPrecioPack(Integer.parseInt(txtPrecioPack.getText()));
+            ClasePack.setEstadoPack(estado);
+            if (PackNegocio.GuardarPack(ClasePack)) {
+                int identificadorPack = PackNegocio.CantidadPack();
+                if (PackArticuloNegocio.GuardarPackArticulo(TablaPackConArticulos, identificadorPack)) {
+                    LimpiarFormularioPack();
+                    LimpiarTablaPackSeleccionArticulos();
+                    LimpiarTablaPack();
+                    ListarPackVista();
+                    JOptionPane.showMessageDialog(null, "Pack creado con éxito");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+            }
+        }
+    }//GEN-LAST:event_btnCrearPackActionPerformed
+
+    private void txtBuscarPackKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarPackKeyReleased
+        // TODO add your handling code here:
+        if (!"".equals(txtBuscarPack.getText())) {
+            LimpiarFormularioPack();
+            LimpiarTablaPack();
+            PackNegocio.FiltrarPack(TablaPack, txtBuscarPack.getText());
+        } else {
+            LimpiarFormularioPack();
+            LimpiarTablaPackSeleccionArticulos();
+            LimpiarTablaPack();
+            ListarPackVista();
+        }
+    }//GEN-LAST:event_txtBuscarPackKeyReleased
+
+    private void TablaPackMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TablaPackMouseClicked
+        // TODO add your handling code here:
+        int fila = TablaPack.getSelectedRow();
+        LimpiarTablaPackConArticulos();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(null, "Pack no Seleccionado");
+        } else {
+            btnEditarPack.setEnabled(true);
+            btnCrearPack.setEnabled(false);
+            int identificadorPack = Integer.parseInt((String) TablaPack.getValueAt(fila, 0).toString());
+            String nombrePack = TablaPack.getValueAt(fila, 1).toString();
+            String costoPack = TablaPack.getValueAt(fila, 2).toString();
+            String stockPack = TablaPack.getValueAt(fila, 3).toString();
+            String estadoPack = TablaPack.getValueAt(fila, 4).toString();
+            if ("Inactivo".equals(estadoPack)) {
+                ComboBoxEstadoPack.setEnabled(true);
+                btnDesactivarPack.setEnabled(false);
+                btnAgregarArticuloPack.setEnabled(false);
+                btnEliminarArticuloPack.setEnabled(false);
+                txtNombrePack.setEnabled(false);
+                txtPrecioPack.setEnabled(false);
+                txtStockPack.setEnabled(false);
+                txtUnidadesArticulosPack.setText("");
+                txtUnidadesArticulosPack.setEnabled(false);
+                TablaPackConArticulos.setEnabled(false);
+//                TablaPackConArticulos.setCellSelectionEnabled(false);
+                TablaPackSeleccionArticulos.setEnabled(false);
+//                TablaPackSeleccionArticulos.setCellSelectionEnabled(false);
+            } else {
+                btnDesactivarPack.setEnabled(true);
+                ComboBoxEstadoPack.setEnabled(false);
+                txtNombrePack.setEnabled(true);
+                txtPrecioPack.setEnabled(true);
+                txtStockPack.setEnabled(true);
+                TablaPackConArticulos.setEnabled(true);
+                TablaPackSeleccionArticulos.setEnabled(true);               
+            }
+            txtCodigoPack.setText("" + identificadorPack);
+            txtNombrePack.setText(nombrePack);
+            txtPrecioPack.setText(costoPack);
+            txtStockPack.setText(stockPack);
+            ComboBoxEstadoPack.setSelectedItem(estadoPack);
+            ArticulosNegocio.ListarArticulosdelPack(TablaPackConArticulos, identificadorPack);
+            cantidadRegistrosInicial = TablaPackConArticulos.getRowCount();
+
+        }
+    }//GEN-LAST:event_TablaPackMouseClicked
+
+    private void btnDesactivarPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDesactivarPackActionPerformed
+        // TODO add your handling code here:      
+        if (!"".equals(txtNombrePack.getText()) && !"".equals(txtPrecioPack.getText()) && (TablaPackConArticulos.getRowCount() != 0)) {
+            int estado = 0;
+            Pack ClasePack = new Pack();
+            ClasePack.setEstadoPack(estado);
+            ClasePack.setIdentificadorPack(Integer.parseInt(txtCodigoPack.getText()));
+            if (PackNegocio.DesactivarPack(ClasePack)) {
+                LimpiarFormularioPack();
+                LimpiarTablaPack();
+                LimpiarTablaPackSeleccionArticulos();
+                ListarPackVista();
+                JOptionPane.showMessageDialog(null, "Pack Desactivado Exitosamente");
+            } else {
+                JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+            }
+
+        } else {
+            JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnDesactivarPackActionPerformed
+
+    private void btnEditarPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarPackActionPerformed
+        // TODO add your handling code here:
+        int estado = 0;
+        if ((cantidadRegistrosInicial != TablaPackConArticulos.getRowCount())) {
+            modificar = true;
+        }
+        if (ComboBoxEstadoPack.getSelectedItem() == "Activo") {
+            estado = 1;
+        }
+        Pack ClasePack = new Pack();
+        ClasePack.setEstadoPack(estado);
+        ClasePack.setIdentificadorPack(Integer.parseInt(txtCodigoPack.getText()));
+        ClasePack.setPrecioPack(Integer.parseInt(txtPrecioPack.getText()));
+        ClasePack.setStockPack(Integer.parseInt(txtStockPack.getText()));
+        if (!"".equals(txtNombrePack.getText()) && (!"".equals(txtPrecioPack.getText())) && (!"".equals(txtStockPack.getText())) && (TablaPackConArticulos.getRowCount() > 0) && (PackNegocio.BuscarPackEspecifico(ClasePack) == false) || (modificar)) {
+            String nombrePack = txtNombrePack.getText();
+            ClasePack.setNombrePack(nombrePack.toUpperCase());
+            if (PackNegocio.ModificarPack(ClasePack)) {
+                int identificadorPack = Integer.parseInt(txtCodigoPack.getText());
+                if (PackArticuloNegocio.ModificarPackArticulo(TablaPackConArticulos, identificadorPack)) {
+                    LimpiarFormularioPack();
+                    LimpiarTablaPackSeleccionArticulos();
+                    LimpiarTablaPack();
+                    ListarPackVista();
+                    JOptionPane.showMessageDialog(null, "Información modificada con éxito");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+            }
+
+        } else {
+            if ("".equals(txtNombrePack.getText())) {
+                JOptionPane.showMessageDialog(null, "Faltan datos por Ingresar", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "El nombre del pack: " + txtNombrePack.getText() + ", esta registrado");
+            }
+
+        }
+
+    }//GEN-LAST:event_btnEditarPackActionPerformed
+
+    private void txtStockPackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtStockPackActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtStockPackActionPerformed
+
+    private void txtNombreCategoriaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombreCategoriaKeyTyped
+        // TODO add your handling code here:
+        char c = evt.getKeyChar();
+        if ((c >= 33 && c <= 64) || (c >= 91 && c <= 96)
+                || (c >= 123 && c <= 179) || (c >= 181 && c <= 208)
+                || (c >= 210 && c <= 240) || (c >= 242 && c <= 255) || (txtNombreCategoria.getText().length() >= 45))
+            evt.consume();        
+    }//GEN-LAST:event_txtNombreCategoriaKeyTyped
+
+    private void txtNombreEstadoPagoVentaKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombreEstadoPagoVentaKeyTyped
+        // TODO add your handling code here:
+        char c = evt.getKeyChar();
+        if ((c >= 33 && c <= 64) || (c >= 91 && c <= 96)
+                || (c >= 123 && c <= 179) || (c >= 181 && c <= 208)
+                || (c >= 210 && c <= 240) || (c >= 242 && c <= 255) || (txtNombreEstadoPagoVenta.getText().length() >= 45))
+            evt.consume();        
+    }//GEN-LAST:event_txtNombreEstadoPagoVentaKeyTyped
+
+    private void txtNombrePackKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombrePackKeyTyped
+        // TODO add your handling code here:
+        char c = evt.getKeyChar();
+        if ((c >= 33 && c <= 64) || (c >= 91 && c <= 96)
+                || (c >= 123 && c <= 179) || (c >= 181 && c <= 208)
+                || (c >= 210 && c <= 240) || (c >= 242 && c <= 255) || (txtNombrePack.getText().length() >= 45))
+            evt.consume();        
+    }//GEN-LAST:event_txtNombrePackKeyTyped
+
+    private void txtPrecioPackKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPrecioPackKeyTyped
+        // TODO add your handling code here:
+        char c = evt.getKeyChar();
+        if ((c < '0' || c > '9') || (txtPrecioPack.getText().length() >= 4))
+            evt.consume();        
+    }//GEN-LAST:event_txtPrecioPackKeyTyped
+
+    private void txtStockPackKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtStockPackKeyTyped
+        // TODO add your handling code here:
+        char c = evt.getKeyChar();
+        if ((c < '0' || c > '9') || (txtStockPack.getText().length() >= 4))
+            evt.consume();         
+    }//GEN-LAST:event_txtStockPackKeyTyped
+
+    private void txtNombreArticuloKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNombreArticuloKeyTyped
+        // TODO add your handling code here:
+        char c = evt.getKeyChar();
+        if ((c >= 33 && c <= 64) || (c >= 91 && c <= 96)
+                || (c >= 123 && c <= 179) || (c >= 181 && c <= 208)
+                || (c >= 210 && c <= 240) || (c >= 242 && c <= 255) || (txtNombreArticulo.getText().length() >= 45))
+            evt.consume();        
+    }//GEN-LAST:event_txtNombreArticuloKeyTyped
+
+    private void txtMarcaArticuloKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtMarcaArticuloKeyTyped
+        // TODO add your handling code here:
+        char c = evt.getKeyChar();
+        if ((c >= 33 && c <= 64) || (c >= 91 && c <= 96)
+                || (c >= 123 && c <= 179) || (c >= 181 && c <= 208)
+                || (c >= 210 && c <= 240) || (c >= 242 && c <= 255) || (txtMarcaArticulo.getText().length() >= 45))
+            evt.consume();        
+    }//GEN-LAST:event_txtMarcaArticuloKeyTyped
+
+    private void txtUnidadArticuloKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtUnidadArticuloKeyTyped
+        // TODO add your handling code here:
+        char c = evt.getKeyChar();
+        if ((c < '0' || c > '9') || (txtUnidadesArticulosPack.getText().length() >= 4))
+            evt.consume();         
+    }//GEN-LAST:event_txtUnidadArticuloKeyTyped
 
     /**
      * @param args the command line arguments
@@ -5190,6 +5672,7 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> ComboBoxEstadoCanal;
     private javax.swing.JComboBox<String> ComboBoxEstadoCategoria;
     private javax.swing.JComboBox<String> ComboBoxEstadoComuna;
+    private javax.swing.JComboBox<String> ComboBoxEstadoPack;
     private javax.swing.JComboBox<String> ComboBoxEstadoProveedor;
     private javax.swing.JComboBox<String> ComboBoxEstadoVenta;
     private javax.swing.JComboBox<String> ComboBoxProveedorArticulo;
@@ -5204,10 +5687,13 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTable TablaComuna;
     private javax.swing.JTable TablaEstadoVenta;
     private javax.swing.JTable TablaPack;
+    private javax.swing.JTable TablaPackConArticulos;
+    private javax.swing.JTable TablaPackSeleccionArticulos;
     private javax.swing.JTable TablaUsuarios;
     private javax.swing.JTable Tabla_Provedores;
     private javax.swing.JLabel Titulo_Prov;
     private javax.swing.JLabel Titulo_Prov7;
+    private javax.swing.JButton btnAgregarArticuloPack;
     private javax.swing.JButton btnBuscarVenta;
     private javax.swing.JButton btnCancelarArticulos;
     private javax.swing.JButton btnCancelarBanco;
@@ -5217,10 +5703,12 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JButton btnCancelarComuna;
     private javax.swing.JButton btnCancelarDatosDestinatario;
     private javax.swing.JButton btnCancelarEstadoVenta;
+    private javax.swing.JButton btnCancelarPack;
     public static javax.swing.JButton btnCancelarProveedor;
     private javax.swing.JButton btnCancelarUsuario;
     private javax.swing.JButton btnCancelarVenta;
     private javax.swing.JButton btnComprarProveedor;
+    private javax.swing.JButton btnCrearPack;
     private javax.swing.JButton btnDesactivarArticulos;
     private javax.swing.JButton btnDesactivarBanco;
     private javax.swing.JButton btnDesactivarCanal;
@@ -5241,6 +5729,7 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JButton btnEditarPack;
     private javax.swing.JButton btnEditarProveedor;
     private javax.swing.JButton btnEditarUsuario;
+    private javax.swing.JButton btnEliminarArticuloPack;
     private javax.swing.JButton btnGuardarArticulos;
     private javax.swing.JButton btnGuardarBanco;
     private javax.swing.JButton btnGuardarCanal;
@@ -5265,20 +5754,15 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JButton faq1;
     private javax.swing.JTabbedPane informes;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton12;
     private javax.swing.JButton jButton13;
     private javax.swing.JButton jButton14;
-    private javax.swing.JButton jButton24;
-    private javax.swing.JButton jButton27;
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
-    private javax.swing.JButton jButton9;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem2;
-    private javax.swing.JComboBox<String> jComboBox1;
     private com.toedter.calendar.JDateChooser jDateCliente;
     private com.toedter.calendar.JDateChooser jDateVenta;
     private javax.swing.JFrame jFrame1;
@@ -5371,6 +5855,8 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel83;
     private javax.swing.JLabel jLabel84;
     private javax.swing.JLabel jLabel85;
+    private javax.swing.JLabel jLabel86;
+    private javax.swing.JLabel jLabel87;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JLayeredPane jLayeredPane2;
@@ -5462,8 +5948,6 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JTabbedPane jTabbedPane4;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTable jTable2;
     private javax.swing.JTable jTable3;
     private javax.swing.JTable jTable4;
     private javax.swing.JTextField jTextField10;
@@ -5471,7 +5955,6 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextField5;
     private javax.swing.JTextField jTextField6;
-    private javax.swing.JTextField jTextField7;
     private javax.swing.JTextField jTextField8;
     private javax.swing.JTextField jTextField9;
     private javax.swing.JTextPane jTextPane1;
@@ -5497,6 +5980,7 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTextField txtCodigoCategoria;
     private javax.swing.JTextField txtCodigoComuna;
     private javax.swing.JTextField txtCodigoEstadoVenta;
+    private javax.swing.JTextField txtCodigoPack;
     private javax.swing.JTextField txtCuentaUsuario;
     private javax.swing.JTextField txtDVCliente;
     private javax.swing.JTextField txtDVClienteVenta;
@@ -5508,7 +5992,6 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTextField txtEmailClienteVenta;
     public static javax.swing.JTextField txtEmailProveedor;
     private javax.swing.JTextField txtEnvio;
-    private javax.swing.JTextField txtEstadoPagoVenta;
     private javax.swing.JTextField txtIdUsuario;
     private javax.swing.JTextField txtIdentificadorArticulo;
     private javax.swing.JTextField txtMarcaArticulo;
@@ -5521,6 +6004,7 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTextField txtNombreClienteVenta;
     private javax.swing.JTextField txtNombreComuna;
     private javax.swing.JTextField txtNombreDestinatario;
+    private javax.swing.JTextField txtNombreEstadoPagoVenta;
     private javax.swing.JTextField txtNombrePack;
     public static javax.swing.JTextField txtNombreProveedor;
     private javax.swing.JTextField txtNumeroPedidoVenta;
@@ -5531,11 +6015,13 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTextField txtRutClienteVenta;
     public static javax.swing.JTextField txtRutProveedor;
     private javax.swing.JTextField txtSaludoDestinatario;
+    private javax.swing.JTextField txtStockPack;
     private javax.swing.JTextField txtSubTotal;
     public javax.swing.JTextField txtTelefonoCliente;
     private javax.swing.JTextField txtTelefonoClienteVenta;
     private javax.swing.JTextField txtTotal;
     private javax.swing.JTextField txtUnidadArticulo;
+    private javax.swing.JTextField txtUnidadesArticulosPack;
     private javax.swing.JTextField txtbuscarUsuario;
     private javax.swing.JTabbedPane ventas;
     // End of variables declaration//GEN-END:variables

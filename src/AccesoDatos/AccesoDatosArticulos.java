@@ -22,7 +22,7 @@ import javax.swing.table.DefaultTableModel;
 public class AccesoDatosArticulos {
 
     public boolean GuardarArticulo(Connection con, Articulos ClaseArticulo) {
-        String sql = "Insert into articulo (ART_NOMBRE, ART_CODIGO_ARTICULO, ART_STOCK, ART_MARCA, ART_FECHA_VENCIMIENTO, ART_ESTADO, ART_ID_CATEGORIA, ART_ID_PROVEEDOR)values(?, ?, ?, ?, ?, ?, ?, ?)";       
+        String sql = "Insert into articulo (ART_NOMBRE, ART_CODIGO_ARTICULO, ART_STOCK, ART_MARCA, ART_FECHA_VENCIMIENTO, ART_ESTADO, ART_ID_CATEGORIA, ART_ID_PROVEEDOR)values(?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement query = null;
         boolean ingreso = false;
         try {
@@ -124,7 +124,7 @@ public class AccesoDatosArticulos {
     } //fin de metodo BuscarArticuloEstado 
 
     public String BuscarNombreProveedor(Connection con, int id) {
-        String sql = "SELECT PRO_RAZONSOCIAL FROM proveedor INNER JOIN articulo ON proveedor.PRO_ID_PROVEEDOR="+id;
+        String sql = "SELECT PRO_RAZONSOCIAL FROM proveedor INNER JOIN articulo ON proveedor.PRO_ID_PROVEEDOR=" + id;
         String proveedor = " ";
         try {
             Statement st = con.createStatement();
@@ -139,7 +139,7 @@ public class AccesoDatosArticulos {
     } //fin de metodo BuscarNombreProveedor   
 
     public String BuscarNombreCategoria(Connection con, int id) {
-        String sql = "SELECT CAT_NOMBRE_CATEG FROM categoria INNER JOIN articulo ON categoria.CAT_ID_CATEGORIA="+id;
+        String sql = "SELECT CAT_NOMBRE_CATEG FROM categoria INNER JOIN articulo ON categoria.CAT_ID_CATEGORIA=" + id;
         String categoria = " ";
         try {
             Statement st = con.createStatement();
@@ -154,7 +154,10 @@ public class AccesoDatosArticulos {
     } //fin de metodo BuscarNombreCategoria       
 
     public void ListarArticulos(Connection con, JTable TablaArticulos) {
-        String sql = "select * from articulo order by ART_ID_ARTICULO";
+//        String sql = "select * from articulo order by ART_ID_ARTICULO";
+        String sql = "SELECT ART_ID_ARTICULO, ART_NOMBRE, ART_CODIGO_ARTICULO, ART_STOCK, ART_MARCA, ART_FECHA_VENCIMIENTO, ART_ESTADO, categoria.CAT_NOMBRE_CATEG, proveedor.PRO_RAZONSOCIAL FROM articulo \n"
+                + "INNER JOIN categoria ON articulo.ART_ID_CATEGORIA = categoria.CAT_ID_CATEGORIA\n"
+                + "INNER JOIN proveedor ON articulo.ART_ID_PROVEEDOR = proveedor.PRO_ID_PROVEEDOR";
         DefaultTableModel modelo;
         try {
             Statement st = con.createStatement();
@@ -171,8 +174,8 @@ public class AccesoDatosArticulos {
                     } else {
                         arregloArticulos[6] = "Inactivo";
                     }
-                    arregloArticulos[7] = BuscarNombreCategoria(con, resultado.getInt("ART_ID_CATEGORIA"));
-                    arregloArticulos[8] = BuscarNombreProveedor(con, resultado.getInt("ART_ID_PROVEEDOR"));
+//                    arregloArticulos[7] = BuscarNombreCategoria(con, resultado.getInt("ART_ID_CATEGORIA"));
+//                    arregloArticulos[8] = BuscarNombreProveedor(con, resultado.getInt("ART_ID_PROVEEDOR"));
                 }
                 modelo.addRow(arregloArticulos);
             }
@@ -180,7 +183,7 @@ public class AccesoDatosArticulos {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
         }
-    } //fin de metodo ListarCategorias
+    } //fin de metodo ListarArticulos
 
     /*
      */
@@ -213,13 +216,13 @@ public class AccesoDatosArticulos {
             JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
         }
     } // Cierre FiltrarArticulos
-    
+
     /*
      */
     public int CantidadArticulos(Connection con) {
         String sql = "select * from articulo";
         DefaultTableModel modelo;
-        int i=0;
+        int i = 0;
         try {
             Statement st = con.createStatement();
             ResultSet resultado = st.executeQuery(sql);
@@ -231,5 +234,49 @@ public class AccesoDatosArticulos {
         }
         return i;
     } // Cierre CantidadArticulos
-    
+
+    public void ListarArticulosPack(Connection con, JTable TablaPackSeleccionArticulos) {
+        int estado = 1;
+        String sql = "select ART_ID_ARTICULO, ART_NOMBRE from articulo where ART_ESTADO ="+ estado +" order by ART_ID_ARTICULO";
+        DefaultTableModel modelo;
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            modelo = (DefaultTableModel) TablaPackSeleccionArticulos.getModel();
+            ResultSetMetaData rsMd = resultado.getMetaData();
+            int CantidadColumnas = rsMd.getColumnCount();
+            Object[] arregloArticulos = new Object[CantidadColumnas];
+            while (resultado.next()) {
+                for (int i = 0; i < CantidadColumnas; i++) {
+                    arregloArticulos[i] = resultado.getObject(i + 1);
+                }
+                modelo.addRow(arregloArticulos);
+            }
+            TablaPackSeleccionArticulos.setModel(modelo);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+        }
+    } //fin de metodo ListarArticulosPack
+
+    public void ListarArticulosdelPack(Connection con, JTable TablaPackConArticulos, int identificadorPack) {
+        String sql = "SELECT pack_has_articulo.ART_ID_ARTICULO, articulo.ART_NOMBRE, pack_has_articulo.CANTIDAD FROM pack_has_articulo INNER JOIN articulo ON pack_has_articulo.ART_ID_ARTICULO = articulo.ART_ID_ARTICULO AND pack_has_articulo.PCK_ID_PACK=" + identificadorPack;
+        DefaultTableModel modelo;
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            modelo = (DefaultTableModel) TablaPackConArticulos.getModel();
+            ResultSetMetaData rsMd = resultado.getMetaData();
+            int CantidadColumnas = rsMd.getColumnCount();
+            Object[] arregloArticulosPack = new Object[CantidadColumnas];
+            while (resultado.next()) {
+                for (int i = 0; i < CantidadColumnas; i++) {
+                    arregloArticulosPack[i] = resultado.getObject(i + 1);
+                }
+                modelo.addRow(arregloArticulosPack);
+            }
+            TablaPackConArticulos.setModel(modelo);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+        }
+    } //fin de metodo ListarArticulosPack    
 }
