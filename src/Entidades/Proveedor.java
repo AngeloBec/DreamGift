@@ -17,14 +17,14 @@ public class Proveedor {
     private String DireccionProveedor;
     private String Rut;
     private String Dv;
-    private int TelefonoProveedor;
+    private String TelefonoProveedor;
     private String Correo;
     private int Estado;
 
     public Proveedor() {
     }
 
-    public Proveedor(int IdentificadorProveedor, String NombreProveedor, String RazonSocialProveedor, String DireccionProveedor, String rut, String Dv, int TelefonoProveedor, String Correo, int Estado) {
+    public Proveedor(int IdentificadorProveedor, String NombreProveedor, String RazonSocialProveedor, String DireccionProveedor, String rut, String Dv, String TelefonoProveedor, String Correo, int Estado) {
         this.IdentificadorProveedor = IdentificadorProveedor;
         this.NombreProveedor = NombreProveedor;
         this.RazonSocialProveedor = RazonSocialProveedor;
@@ -84,11 +84,11 @@ public class Proveedor {
         this.Dv = Dv;
     }
 
-    public int getTelefonoProveedor() {
+    public String getTelefonoProveedor() {
         return TelefonoProveedor;
     }
 
-    public void setTelefonoProveedor(int TelefonoProveedor) {
+    public void setTelefonoProveedor(String TelefonoProveedor) {
         this.TelefonoProveedor = TelefonoProveedor;
     }
 
