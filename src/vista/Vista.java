@@ -149,6 +149,7 @@ public class Vista extends javax.swing.JFrame {
 
     public void ListarClienteVista() {
         DeshabilitarCamposClientes();
+        HeaderTablas(TablaClientes);
         ClientesNegocio.ListarCliente(TablaClientes);
         CargarCanal();
     }
