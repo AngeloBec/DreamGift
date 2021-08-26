@@ -165,4 +165,18 @@ public class AccesoDatosUsuarios {
             JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
         }
     } // Cierre Filtrar usuario
+    public boolean ValidarUsuario(Connection con, String usuario, String clave){
+        String sql = "Select * from usuarios where USU_USERNAME='"+usuario+"' and USU_CLAVE='"+clave+"'";
+        boolean encontrado = false;
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            if (resultado.next()) {
+                encontrado = true;
+            }
+        } catch (Exception e) {
+
+        }
+        return encontrado;
+    } //fin de metodo ValidarUsuario    
 }

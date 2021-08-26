@@ -101,4 +101,20 @@ public class NegocioUsuario {
         } catch (Exception e) {
         }
     }
+    
+    public boolean ValidarUsuario( String usuario, String clave){
+        Connection con = Conexion.getConecction();
+        try {
+            ejecucion = UsuarioNegocio.ValidarUsuario(con, usuario, clave);
+        } catch (Exception e) {
+        } finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return ejecucion;
+    } //fin de metodo ValidarUsuario            
 }

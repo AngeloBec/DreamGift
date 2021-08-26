@@ -15,7 +15,7 @@ public class inicio {
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Vista().setVisible(true);
+                new Login().setVisible(true);
 
             }
 
