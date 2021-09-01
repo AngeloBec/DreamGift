@@ -4,6 +4,8 @@ import AccesoDatos.AccesoDatosClientes;
 import Entidades.Clientes;
 import conexion.Conexion;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 
@@ -13,6 +15,8 @@ import javax.swing.JTable;
  */
 public class NegocioClientes {
     private boolean ejecucionCliente;
+    private String [] ejecucionClienteRut = null;
+    ArrayList ejecucionClienteRutLista = new ArrayList();
     private AccesoDatosClientes ClienteNegocio = new AccesoDatosClientes();
     private int IdCanal = 0;
     
@@ -125,4 +129,53 @@ public class NegocioClientes {
         return IdCanal;
     }
 
+    public ArrayList BuscarClienteRut(String rut) {
+        Connection con = Conexion.getConecction();
+        try {
+            ejecucionClienteRutLista = ClienteNegocio.BuscarClienteRut(con, rut);
+        } catch (Exception e) {
+        } finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return ejecucionClienteRutLista;
+    } //fin de metodo BuscarClienteRut      
+
+    public int ObtenerSecuenciaCliente() {
+        Connection con = Conexion.getConecction();
+        int id = ClienteNegocio.ObtenerSecuenciaCliente(con);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return id;
+    }  //fin de metodo ObtenerSecuenciaCliente   
+    
+    public int ObtenerIdCliente(String rut) {
+        Connection con = Conexion.getConecction();
+        int id = ClienteNegocio.ObtenerIdCliente(con, rut);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return id;
+    }  //fin de metodo ObtenerIdCliente     
 }

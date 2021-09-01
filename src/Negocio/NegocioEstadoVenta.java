@@ -9,6 +9,7 @@ import AccesoDatos.AccesoDatosEstadoVenta;
 import Entidades.EstadoVenta;
 import conexion.Conexion;
 import java.sql.Connection;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 
 /**
@@ -117,4 +118,31 @@ public class NegocioEstadoVenta {
         } catch (Exception e) {
         }
     }  //fin de metodo FiltrarEstadoVenta  
+
+    public void CargarEstadoDespacho(JComboBox seleccion) {
+        Connection con = Conexion.getConecction();
+        EstadoVentaNegocio.CargarEstadoDespacho(con, seleccion);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }
+    } //fin de metodo CargarEstadoDespacho
+
+public int ObtenerIdEstadoVenta(String nombreEstadoVenta){
+        Connection con = Conexion.getConecction();
+        int id = EstadoVentaNegocio.ObtenerIdEstadoVenta(con, nombreEstadoVenta);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return id;
+    }  //fin de metodo ObtenerIdEstadoVenta     
+    
 }

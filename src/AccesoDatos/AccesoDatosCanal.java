@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -92,7 +93,7 @@ public class AccesoDatosCanal {
     } //fin de metodo BuscarCanal
 
     public boolean BuscarCanalEstado(Connection con, Canal medios) {
-        String sql = "Select * from canal where CAN_ESTADO="+medios.getEstadoCanal()+" and CAN_ID_CANAL="+medios.getIdentificadorCanal()+"";
+        String sql = "Select * from canal where CAN_ESTADO=" + medios.getEstadoCanal() + " and CAN_ID_CANAL=" + medios.getIdentificadorCanal() + "";
         boolean encontrado = false;
         try {
             Statement st = con.createStatement();
@@ -105,6 +106,7 @@ public class AccesoDatosCanal {
         }
         return encontrado;
     } //fin de metodo BuscarCanalEstado   
+
     public void ListarCanal(Connection con, JTable TablaCanal) {
         String sql = "select * from canal order by CAN_ID_CANAL";
         DefaultTableModel modelo;
@@ -161,4 +163,47 @@ public class AccesoDatosCanal {
             JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
         }
     } // Cierre Filtrar Canal
+
+    public void CargarCanal(Connection con, JComboBox ComboBoxCanalVentas) {
+        int estado = 1;
+        String sql = "select CAN_NOMBRE from canal where CAN_ESTADO =" + estado + " order by CAN_NOMBRE";
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            ComboBoxCanalVentas.addItem("Seleccione Canal");
+            while (resultado.next()) {
+                ComboBoxCanalVentas.addItem(resultado.getString("CAN_NOMBRE"));
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+        }
+    } //fin de metodo CargarCanal 
+
+    public String ObtenerNombreCanal(Connection con, int idCanal) {
+        String sql = "Select CAN_NOMBRE from canal where CAN_ID_CANAL=" + idCanal + "";
+        String nombre = "";
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            if (resultado.next()) {
+                nombre = resultado.getString("CAN_NOMBRE");
+            }
+        } catch (Exception e) {
+        }
+        return nombre;
+    } //fin de metodo ObtenerIdCanal
+
+    public int ObtenerIdCanal(Connection con, String nombreCanal) {
+        String sql = "Select CAN_ID_CANAL from canal where CAN_NOMBRE='" + nombreCanal + "'";
+        int id = 0;
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            if (resultado.next()) {
+                id = resultado.getInt("CAN_ID_CANAL");
+            }
+        } catch (Exception e) {
+        }
+        return id;
+    } //fin de metodo ObtenerIdCanal    
 }

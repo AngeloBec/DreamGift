@@ -4,6 +4,9 @@ import Entidades.Bancos;
 import Entidades.Usuario;
 import Negocio.NegocioBancos;
 import Negocio.NegocioUsuario;
+import Negocio.NegocioVentas;
+import conexion.Conexion;
+import java.sql.Connection;
 
 /**
  *
@@ -12,8 +15,10 @@ import Negocio.NegocioUsuario;
 public class PruebasUsuarios {
     NegocioUsuario UsuarioNeg = new NegocioUsuario();
     NegocioBancos BancoNeg = new NegocioBancos();
+    NegocioVentas VentaNeg = new NegocioVentas();
     Usuario User = new Usuario();
     Bancos Bank = new Bancos();
+    Connection con = Conexion.getConecction();
     boolean exito;
     public void insertar(){
         User.setNombre("Rafael");
@@ -77,12 +82,19 @@ public class PruebasUsuarios {
             System.out.println("No lo encontre"); 
         }        
     }
+    
+    public void Numpedido(){
+        int id = VentaNeg.ObtenerNumeroPedido();
+        System.out.println("Id Pedido:"+id);        
+        
+    }
     public static void main(String[] args) {
         PruebasUsuarios Pruebas = new PruebasUsuarios();
         //Pruebas.insertar();    
         //Pruebas.modificar();
         //Pruebas.desactivar();
-        Pruebas.buscarEstado();
+        //Pruebas.buscarEstado();
+        Pruebas.Numpedido();
     }
 }
     

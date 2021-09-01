@@ -9,6 +9,7 @@ import AccesoDatos.AccesoDatosComunas;
 import Entidades.Comuna;
 import conexion.Conexion;
 import java.sql.Connection;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 
 /**
@@ -117,4 +118,30 @@ public class NegocioComuna {
         } catch (Exception e) {
         }
     }
+
+    public void CargarComuna(JComboBox ComboBoxComunaDestinatario) {
+        Connection con = Conexion.getConecction();
+        ComunaNegocio.CargarComuna(con, ComboBoxComunaDestinatario);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }
+    } //fin de metodo CargarComuna   
+
+    public int ObtenerIdComuna(String nombreComuna) {
+        Connection con = Conexion.getConecction();
+        int id = ComunaNegocio.ObtenerIdComuna(con, nombreComuna);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return id;
+    }  //fin de metodo ObtenerIdComuna       
 }

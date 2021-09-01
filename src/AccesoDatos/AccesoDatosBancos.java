@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -161,5 +162,34 @@ public class AccesoDatosBancos {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
         }
-    } // Cierre Filtrar Canal    
+    } // Cierre Filtrar Banco  
+    
+    public void CargarBanco(Connection con, JComboBox ComboBoxBancoConf) {
+        int estado = 1;
+        String sql = "select BAN_NOMBRE from bancos where BAN_ESTADO =" + estado + " order by BAN_NOMBRE";
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            ComboBoxBancoConf.addItem("Seleccione Banco");
+            while (resultado.next()) {
+                ComboBoxBancoConf.addItem(resultado.getString("BAN_NOMBRE"));
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+        }
+    } //fin de metodo CargarCanal     
+
+    public int ObtenerIdBanco(Connection con, String nombreBanco) {
+        String sql = "Select BAN_ID_BANCO from bancos where BAN_NOMBRE='" + nombreBanco + "'";
+        int id = 0;
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            if (resultado.next()) {
+                id = resultado.getInt("BAN_ID_BANCO");
+            }
+        } catch (Exception e) {
+        }
+        return id;
+    } //fin de metodo ObtenerId    
 }

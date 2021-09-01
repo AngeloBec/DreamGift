@@ -4,6 +4,7 @@ import AccesoDatos.AccesoDatosCanal;
 import Entidades.Canal;
 import conexion.Conexion;
 import java.sql.Connection;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 
 /**
@@ -112,4 +113,48 @@ public class NegocioCanales {
         } catch (Exception e) {
         }
     }
+
+    public void CargarCanal(JComboBox ComboBoxCanalVentas) {
+        Connection con = Conexion.getConecction();
+        CanalNegocio.CargarCanal(con, ComboBoxCanalVentas);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }
+    } //fin de metodo CargarCanal   
+
+    public String ObtenerNombreCanal(int idCanal) {
+        Connection con = Conexion.getConecction();
+        String nombre = CanalNegocio.ObtenerNombreCanal(con, idCanal);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return nombre;
+    }  //fin de metodo ObtenerIdCanal   
+    
+    
+public int ObtenerIdCanal(String nombreCanal){
+        Connection con = Conexion.getConecction();
+        int id = CanalNegocio.ObtenerIdCanal(con, nombreCanal);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return id;
+    }  //fin de metodo ObtenerIdCanal   
 }

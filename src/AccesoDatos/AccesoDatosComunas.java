@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -163,6 +164,34 @@ public class AccesoDatosComunas {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
         }
-    } // Cierre Filtrar usuario
+    } // Cierre FiltrarComuna
     
+    public void CargarComuna(Connection con, JComboBox ComboBoxComunaDestinatario) {
+        int estado = 1;
+        String sql = "select COM_NOMBRE from comuna where COM_ESTADO ="+ estado +" order by COM_NOMBRE";
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            ComboBoxComunaDestinatario.addItem("Seleccione Comuna");
+            while (resultado.next()) {
+                ComboBoxComunaDestinatario.addItem(resultado.getString("COM_NOMBRE"));
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+        }
+    } //fin de metodo CargarComuna  
+
+    public int ObtenerIdComuna(Connection con, String nombreComuna) {
+        String sql = "Select COM_ID from comuna where COM_NOMBRE='" + nombreComuna + "'";
+        int id = 0;
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            if (resultado.next()) {
+                id = resultado.getInt("COM_ID");
+            }
+        } catch (Exception e) {
+        }
+        return id;
+    } //fin de metodo ObtenerIdComuna    
 }

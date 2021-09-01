@@ -11,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.util.ArrayList;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -196,4 +198,34 @@ public class AccesoDatosPack {
         }
         return i;
     } // Cierre CantidadPack
+
+    public void CargarPack(Connection con, JComboBox combobxPackDestinatario) {
+        int estado = 1;
+        String sql = "select PCK_NOMBRE from pack where PCK_ESTADO ="+ estado +" order by PCK_NOMBRE";
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            combobxPackDestinatario.addItem("Seleccione Pack");
+            while (resultado.next()) {
+                combobxPackDestinatario.addItem(resultado.getString("PCK_NOMBRE"));
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+        }
+    } //fin de metodo CargarPack  
+
+    public ArrayList ObtenerInformacionPack(Connection con, String nombrePack) {
+        String sql = "Select PCK_ID_PACK, PCK_PRECIO from pack where PCK_NOMBRE='" + nombrePack + "'";
+        ArrayList datosPack = new ArrayList();
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            if (resultado.next()) {
+                datosPack.add(resultado.getString("PCK_ID_PACK"));
+                datosPack.add(resultado.getString("PCK_PRECIO"));
+            }
+        } catch (Exception e) {
+        }
+        return datosPack;
+    } //fin de metodo BuscarBanco    
 }

@@ -9,6 +9,8 @@ import AccesoDatos.AccesoDatosPack;
 import Entidades.Pack;
 import conexion.Conexion;
 import java.sql.Connection;
+import java.util.ArrayList;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 
 /**
@@ -17,6 +19,7 @@ import javax.swing.JTable;
  */
 public class NegocioPack {
     private boolean ejecucionPack;
+    ArrayList ejecucionPackLista = new ArrayList();
     private AccesoDatosPack PackNegocio = new AccesoDatosPack();
 
     public boolean GuardarPack(Pack ClasePack) {
@@ -150,4 +153,30 @@ public class NegocioPack {
         }
         return cantidadRegistros;
     }  //fin de metodo CantidadPack  
+
+    public void CargarPack(JComboBox combobxPackDestinatario) {
+        Connection con = Conexion.getConecction();
+        PackNegocio.CargarPack(con, combobxPackDestinatario);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }
+    } //fin de metodo CargarPack     
+
+    public ArrayList ObtenerInformacionPack(String nombrePack) {
+        Connection con = Conexion.getConecction();
+        try {
+            ejecucionPackLista = PackNegocio.ObtenerInformacionPack(con, nombrePack);
+        } catch (Exception e) {
+        } finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return ejecucionPackLista;
+    } //fin de metodo BuscarClienteRut     
+    
 }

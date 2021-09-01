@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -163,6 +164,33 @@ public class AccesoDatosEstadoVenta {
         }
     } // Cierre Filtrar Canal   
     
-  
+    public void CargarEstadoDespacho(Connection con, JComboBox seleccion) {
+        int estado = 1;
+        String sql = "select EST_NOMBRE from estado_venta where EST_ESTADO =" + estado + " order by EST_NOMBRE";
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            //seleccion.addItem("Seleccione Estado");
+            while (resultado.next()) {
+                seleccion.addItem(resultado.getString("EST_NOMBRE"));
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Problemas de Conexion, Intente mas tarde");
+        }
+    } //fin de metodo CargarEstadoDespacho      
+
+    public int ObtenerIdEstadoVenta(Connection con, String nombreEstadoVenta) {
+        String sql = "Select EST_ID_ESTADO from estado_venta where EST_NOMBRE ='" + nombreEstadoVenta + "'";
+        int id = 0;
+        try {
+            Statement st = con.createStatement();
+            ResultSet resultado = st.executeQuery(sql);
+            if (resultado.next()) {
+                id = resultado.getInt("EST_ID_ESTADO");
+            }
+        } catch (Exception e) {
+        }
+        return id;
+    } //fin de metodo ObtenerIdEstadoVenta   
     
 }

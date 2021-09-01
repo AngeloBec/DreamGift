@@ -4,6 +4,7 @@ import AccesoDatos.AccesoDatosBancos;
 import Entidades.Bancos;
 import conexion.Conexion;
 import java.sql.Connection;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 
 /**
@@ -113,4 +114,30 @@ public class NegocioBancos {
         } catch (Exception e) {
         }
     }  //fin de metodo FiltrarBanco  
+    
+    public void CargarBanco(JComboBox ComboBoxBancoConf) {
+        Connection con = Conexion.getConecction();
+        BancoNegocio.CargarBanco(con, ComboBoxBancoConf);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }
+    } //fin de metodo CargarComuna   
+    
+    public int ObtenerIdBanco(String nombreBanco) {
+        Connection con = Conexion.getConecction();
+        int id = BancoNegocio.ObtenerIdBanco(con, nombreBanco);
+        try {
+            con.close();
+        } catch (Exception e) {
+        }finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return id;
+    }  //fin de metodo ObtenerIdComuna     
 }
