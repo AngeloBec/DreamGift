@@ -181,7 +181,7 @@ public class AccesoDatosVentas {
     } // Cierre FiltrarVentaRut 
 
     public void ListarDestinosDespachos(Connection con, JTable TablaListadoDestino) {
-        String sql = "SELECT venta.VTA_CODIGO_TRANSFERENCIA, pack.PCK_NOMBRE, "
+        String sql = "SELECT venta.VTA_ID_VENTA, pack.PCK_NOMBRE, "
                 + "venta.VTA_NOMBRE_DESTINATARIO, venta.VTA_FECHA_ENTREGA, comuna.COM_NOMBRE, "
                 + "venta.VTA_DIRECCION_DESTINATARIO, venta.VTA_HORA_ENTREGA_INICIAL, "
                 + "venta.VTA_HORA_ENTREGA_FINAL FROM venta "
@@ -210,7 +210,7 @@ public class AccesoDatosVentas {
     } //fin de metodo ListarDestinosDespachos     
 
     public void FiltrarDestinosDespachosPorFecha(Connection con, JTable TablaListadoDestino, String Fecha) {
-        String sql = "SELECT venta.VTA_CODIGO_TRANSFERENCIA, pack.PCK_NOMBRE, "
+        String sql = "SELECT venta.VTA_ID_VENTA, pack.PCK_NOMBRE, "
                 + "venta.VTA_NOMBRE_DESTINATARIO, venta.VTA_FECHA_ENTREGA, comuna.COM_NOMBRE, "
                 + "venta.VTA_DIRECCION_DESTINATARIO, venta.VTA_HORA_ENTREGA_INICIAL, "
                 + "venta.VTA_HORA_ENTREGA_FINAL FROM venta "

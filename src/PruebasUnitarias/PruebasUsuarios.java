@@ -94,7 +94,17 @@ public class PruebasUsuarios {
         //Pruebas.modificar();
         //Pruebas.desactivar();
         //Pruebas.buscarEstado();
-        Pruebas.Numpedido();
+        //Pruebas.Numpedido();
+        System.out.println("a");
+        try {
+            System.out.println("b");
+            throw new IllegalArgumentException();
+        } catch (RuntimeException e) {
+            System.out.println("c");
+        }finally{
+            System.out.println("d");
+        }
+        System.out.println("e");
     }
 }
     
